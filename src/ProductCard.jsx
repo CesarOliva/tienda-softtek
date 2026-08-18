@@ -1,16 +1,21 @@
 import React from "react";
 import './ProductList.css'
+import { Link } from "react-router-dom";
 
 
 function ProductCard({ product }) {
     return (
-        <div className="ProductCard">
+        <Link to={`producto-${product.id}`} className="ProductCard">
 
             <div className="ProductInfo">
                 <h3>{product.nombre}</h3>
 
                 <div className="Precio">
                     <p>Precio: $ {product.precio}</p>
+                </div>
+
+                  <div className="Descripcion">
+                    <p>Descripcion:  {product.descripcion}</p>
                 </div>
 
                 <p>
@@ -26,7 +31,7 @@ function ProductCard({ product }) {
                 />
             </div>
 
-        </div>
+        </Link>
     );
 }
 
