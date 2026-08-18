@@ -85,8 +85,9 @@ function Producto() {
 
                     <button
                         type="button"
+                        disabled={product.stock == 0}
                         onClick={handleComprar}
-                        className="text-lg gap-2 cursor-pointer bg-neutral-900 hover:bg-neutral-800 py-2 px-6 rounded-lg"
+                        className="disabled:cursor-not-allowed cursor-pointer text-lg gap-2 bg-neutral-900 hover:bg-neutral-800 py-2 px-6 rounded-lg"
                     >
                         Comprar
                     </button>
