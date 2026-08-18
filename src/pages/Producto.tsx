@@ -48,9 +48,7 @@ function Producto() {
     }
 
     return (
-        <>
-            <Menu title="Producto" />
-            <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-8 md:justify-center mt-4 md:mt-12 mb-24">
+        <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-8 md:justify-center mt-4 md:mt-12 mb-24">
 
             {showConfetti && (
                 <ReactConfetti
@@ -90,14 +88,13 @@ function Producto() {
                         type="button"
                         disabled={product.stock == 0}
                         onClick={handleComprar}
-                        className="disabled:cursor-not-allowed cursor-pointer text-lg gap-2 bg-neutral-900 hover:bg-neutral-800 py-2 px-6 rounded-lg"
+                        className="disabled:cursor-not-allowed cursor-pointer text-lg gap-2 disabled:bg-neutral-800 bg-neutral-900 hover:bg-neutral-800 py-2 px-6 rounded-lg"
                     >
-                        Comprar
+                        {product.stock == 0 ? "No disponible" : "Comprar"}
                     </button>
                 </section>
             </div>
-            </main>
-        </>
+        </main>
     );
 }
 

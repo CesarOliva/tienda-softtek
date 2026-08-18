@@ -1,3 +1,4 @@
+import Menu from "../_components/Menu";
 import ProductCard from "../_components/ProductCard";
 
 export const productos = [
