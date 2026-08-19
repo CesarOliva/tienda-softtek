@@ -2,6 +2,7 @@ import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
 import Catalogo from './pages/Catalogo'
 import Producto from './pages/Producto'
 import Menu from './_components/Menu';
+import Footer from './_components/Footer';
 import Main from './pages/Main';
 
 function Layout() {
@@ -9,6 +10,7 @@ function Layout() {
     <>
       <Menu />
       <Outlet />
+      <Footer />
     </>
   );
 }
