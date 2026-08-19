@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { productos } from "./Catalogo";
 import ReactConfetti from "react-confetti";
 import { useState } from "react";
+import Menu from "../_components/Menu";
 
 function Producto() {
     const { productId } = useParams();
@@ -47,7 +48,9 @@ function Producto() {
     }
 
     return (
-        <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-8 md:justify-center mt-4 md:mt-12 mb-24">
+        <>
+            <Menu title="Producto" />
+            <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-8 md:justify-center mt-4 md:mt-12 mb-24">
 
             {showConfetti && (
                 <ReactConfetti
@@ -93,7 +96,8 @@ function Producto() {
                     </button>
                 </section>
             </div>
-        </main>
+            </main>
+        </>
     );
 }
 
