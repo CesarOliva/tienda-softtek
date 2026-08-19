@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const Menu = ({ title = "Catálogo" }) => {
     return (
-        <header className="border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-sm sticky top-0 z-[100]">
+        <header className="border-b border-neutral-100/50 bg-neutral-950/80 backdrop-blur-sm sticky top-0 z-[100]">
             <nav className="mx-auto flex max-w-4xl items-center justify-between px-8 py-6 text-sm text-neutral-200">
                 <Link
                     to="/"

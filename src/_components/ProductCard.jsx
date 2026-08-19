@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 function ProductCard({ product }) {
     return (
-        <Link to={`producto-${product.id}`} className="ProductCard">
+        <Link to={`/producto-${product.id}`} className="ProductCard">
 
             <div className="ProductInfo">
                 <h3>{product.nombre}</h3>
