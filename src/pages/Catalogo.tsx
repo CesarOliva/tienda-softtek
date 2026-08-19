@@ -1,5 +1,7 @@
+import { Link } from "react-router-dom";
 import Menu from "../_components/Menu";
 import ProductCard from "../_components/ProductCard";
+import Featured from "../_components/Featured";
 
 export const productos = [
     {
@@ -88,10 +90,11 @@ const Catalogo = () => {
     return ( 
         <main className="mx-auto flex min-h-screen max-w-4xl flex-col px-8 justify-center my-8">
             <h2 className="text-4xl my-4">Lista</h2> 
+
             <div className='Product'>
-            {productos.map((product) => (
-                <ProductCard key={product.id} product = {product} />
-            ))}
+                {productos.map((product) => (
+                    <ProductCard key={product.id} product = {product} />
+                ))}
             </div>
         </main>
     );

@@ -11,6 +11,14 @@ const Menu = ({ title = "Catálogo" }) => {
                     Tienda
                 </Link>
 
+                <div className="flex gap-6">
+                    <Link to="/" className="text-lg text-neutral-300 hover:text-[#fafafa]">
+                        Inicio
+                    </Link>
+                    <Link to="/catalogo" className="text-lg text-neutral-300 hover:text-[#fafafa]">
+                        Catalogo
+                    </Link>
+                </div>
             </nav>
         </header>
     );
