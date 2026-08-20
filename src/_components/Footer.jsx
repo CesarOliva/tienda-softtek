@@ -23,7 +23,7 @@ const Footer = () => {
           </ul>
         </div>
 
-        <div className="">
+        <div className="logo">
           <div className="flex gap-2 items-center">
             <Cpu className='size-6'/>
             <h3 className='text-2xl'>TechZone</h3>

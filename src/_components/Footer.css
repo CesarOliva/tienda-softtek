@@ -120,3 +120,40 @@
   display: flex;
   gap: 15px;
 }
+
+@media screen and (max-width: 768px) {
+  .footer-container{
+    flex-direction: column;
+    order: 0
+  }
+
+  .footer-bottom {
+    justify-content: center;
+  }
+
+  .footer-links{
+    display: flex;
+    justify-content: center;
+    order: 1
+  }
+
+  .footer-links.right{
+    order: 2;
+  }
+
+  .footer-links ul{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .footer-links ul li{
+    text-align: center;
+  }
+
+  footer .logo{
+    display: flex;
+    justify-content: center;
+  }
+}

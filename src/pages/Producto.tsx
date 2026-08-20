@@ -48,7 +48,7 @@ function Producto() {
     }
 
     return (
-        <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-8 md:justify-center mt-4 md:mt-12 mb-24">
+        <main className="mx-auto flex md:min-h-screen max-w-4xl flex-col gap-8 px-8 md:justify-center mt-12 md:mb-24">
 
             {showConfetti && (
                 <ReactConfetti
