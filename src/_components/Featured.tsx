@@ -5,7 +5,7 @@ import Card from "./Card";
 
 const Featured = () => {
     return (
-        <div className="mt-8">
+        <div className="">
             <div className="flex items-center justify-between">
                 <h2 className="text-3xl">Productos destacados</h2>
                 <Link to="/catalogo" className="text-neutral-300 flex items-center cursor-pointer gap-2">Ver todos <ArrowRight className="size-5" /></Link>
