@@ -14,7 +14,7 @@ function ProductCard({ product }) {
                     <p>Precio: $ {product.precio}</p>
                 </div>
 
-                  <div className="Descripcion">
+                <div className="Descripcion">
                     <p>Descripcion:  {product.descripcion}</p>
                 </div>
 
@@ -35,6 +35,6 @@ function ProductCard({ product }) {
     );
 }
 
- 
 
- export default ProductCard;
+
+export default ProductCard;
