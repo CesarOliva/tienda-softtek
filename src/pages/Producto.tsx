@@ -3,6 +3,7 @@ import { productos } from "./Catalogo";
 import ReactConfetti from "react-confetti";
 import { useState } from "react";
 import Menu from "../_components/Menu";
+import Featured from "../_components/Featured";
 
 function Producto() {
     const { productId } = useParams();
@@ -94,6 +95,8 @@ function Producto() {
                     </button>
                 </section>
             </div>
+
+            <Featured/>
         </main>
     );
 }
