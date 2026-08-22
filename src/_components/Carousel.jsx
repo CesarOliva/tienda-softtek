@@ -5,12 +5,12 @@ const images = [
   {
     src: "https://m.media-amazon.com/images/I/61QY3V6A-NL.jpg",
     title: "Sube de nivel...",
-    text: "Mouse ultra ligeo 69 gramos.",
+    text: "Mouse ultra ligero 69 gramos.",
   },
   {
     src: "https://m.media-amazon.com/images/I/71BFvz7N32L._AC_.jpg",
     title: "30% de descuento",
-    text: "Audifonoscde la marca sony",
+    text: "Audífonos de la marca sony",
   },
   {
     src: "https://i.etsystatic.com/31350528/r/il/016838/5582580533/il_794xN.5582580533_483u.jpg",
@@ -42,7 +42,7 @@ export default function Carousel() {
       <button className="prev" onClick={prevSlide} aria-label="Imagen anterior">&#10094;</button>
       <div className="carousel-slide">
         <div className="carousel-copy">
-          <span>TIENDA</span>
+          <span>TechZone</span>
           <h1>{images[currentIndex].title}</h1>
           <p>{images[currentIndex].text}</p>
         </div>
