@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 function ProductCard({ product }) {
     return (
-        <Link to={`/producto-${product.id}`} className="ProductCard">
+        <Link to={`/producto-${product.product_id}`} className="ProductCard">
 
             <div className="ProductInfo">
                 <h3>{product.nombre}</h3>
@@ -23,13 +23,13 @@ function ProductCard({ product }) {
                 </p>
             </div>
 
-            <div className="ProductImageContainer">
+            {/* <div className="ProductImageContainer">
                 <img
                     src={product.imagen}
                     alt={product.nombre}
                     className="ProductImage"
                 />
-            </div>
+            </div> */}
 
         </Link>
     );

@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
 import ProductCard from "../_components/ProductCard";
+import { supabase } from "../lib/supabaseClient";
+import type { Product } from "../../types/Product";
 
 export const productos = [
     {
@@ -92,6 +95,23 @@ export const productos = [
 ]
 
 const Catalogo = () => {
+    const [products, setProducts] = useState<Product[]>([]);
+
+    useEffect(() => {
+        getProducts();
+    }, [])
+
+    async function getProducts(){
+        const { data, error } = await supabase.from('products').select();
+
+        if(error) {
+            console.error('Error fetching products:', error);
+            return
+        }
+
+        setProducts(data);
+    }
+
     return (
         <>
             <section
@@ -107,8 +127,8 @@ const Catalogo = () => {
             </section>
             <main className="mx-auto flex min-h-screen max-w-4xl flex-col px-8 justify-center my-12">
                 <div className='Product'>
-                    {productos.map((product) => (
-                        <ProductCard key={product.id} product={product} />
+                    {products.map((product: Product) => (
+                        <ProductCard key={product.product_id} product={product} />
                     ))}
                 </div>
             </main>
