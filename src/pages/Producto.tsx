@@ -46,7 +46,27 @@ function Producto() {
     };
     
     if (isLoading) {
-        return <main className="mx-auto flex h-screen max-w-5xl items-center justify-center px-8">Cargando producto...</main>;
+        return (
+            <main className="mx-auto flex md:min-h-screen max-w-5xl flex-col gap-8 px-8 md:justify-center mt-12 md:mb-24 animate-pulse" aria-busy="true" aria-label="Cargando producto">
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-2 pb-8">
+                    <div className="w-full aspect-square rounded-2xl bg-neutral-800" />
+
+                    <section className="flex flex-col justify-center">
+                        <div className="mb-4 h-3 w-36 rounded bg-neutral-800" />
+                        <div className="mb-4 h-12 w-4/5 rounded bg-neutral-800" />
+                        <div className="mb-3 h-4 w-28 rounded bg-neutral-800" />
+                        <div className="mb-3 h-8 w-32 rounded bg-neutral-800" />
+                        <div className="mb-2 h-5 w-full rounded bg-neutral-800" />
+                        <div className="mb-6 h-5 w-3/4 rounded bg-neutral-800" />
+
+                        <div className="flex flex-col md:flex-row gap-2">
+                            <div className="h-11 w-full rounded-lg bg-neutral-800" />
+                            <div className="h-11 w-full rounded-lg bg-neutral-800" />
+                        </div>
+                    </section>
+                </div>
+            </main>
+        );
     }
 
     if (!product) {
@@ -89,7 +109,7 @@ function Producto() {
                     loading="lazy"
                     src={"product.imagen"}
                     alt={product.nombre}
-                    className="rounded-2xl bg-neutral-900 block w-full object-contain transition-all duration-300"
+                    className="rounded-2xl bg-neutral-900 block w-full h-110 object-contain transition-all duration-300"
                 />
 
                 <section className="flex flex-col justify-center">

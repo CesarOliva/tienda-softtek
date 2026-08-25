@@ -1,41 +1,39 @@
 import React, { useEffect, useState } from "react";
+import { supabase } from "./supabaseClient";
 
-const getReviewsKey = (productId) => `reviews_prod_${productId}`;
+const emptyRating = { rating: 0, count: 0 };
 
-export function getProductRating(productId) {
-    if (typeof window === "undefined") {
-        return { rating: 5, count: 0 };
-    }
+export async function getProductRating(productId) {
+    if (!Number.isInteger(productId)) return emptyRating;
 
-    try {
-        const savedReviews = localStorage.getItem(getReviewsKey(productId));
-        const reviews = savedReviews ? JSON.parse(savedReviews) : [];
-        const validRatings = reviews
-            .map((review) => Number(review.rating))
-            .filter((reviewRating) => reviewRating >= 1 && reviewRating <= 5);
+    const { data, error } = await supabase
+        .from("product_reviews")
+        .select("calificacion")
+        .eq("product_id", productId);
 
-        if (validRatings.length === 0) {
-            return { rating: 5, count: 0 };
-        }
+    if (error || !data?.length) return emptyRating;
 
-        const average = validRatings.reduce((sum, reviewRating) => sum + reviewRating, 0) / validRatings.length;
-        return { rating: Math.round(average), count: validRatings.length };
-    } catch {
-        return { rating: 5, count: 0 };
-    }
+    const total = data.reduce((sum, review) => sum + review.calificacion, 0);
+    return { rating: Math.round(total / data.length), count: data.length };
 }
 
 export function useProductRating(productId) {
-    const [productRating, setProductRating] = useState(() => getProductRating(productId));
+    const [productRating, setProductRating] = useState(emptyRating);
 
     useEffect(() => {
-        const updateRating = () => setProductRating(getProductRating(productId));
+        let isCurrent = true;
+
+        async function updateRating() {
+            const rating = await getProductRating(productId);
+            if (isCurrent) setProductRating(rating);
+        }
+
+        updateRating();
         window.addEventListener("reviews-updated", updateRating);
-        window.addEventListener("storage", updateRating);
 
         return () => {
+            isCurrent = false;
             window.removeEventListener("reviews-updated", updateRating);
-            window.removeEventListener("storage", updateRating);
         };
     }, [productId]);
 
@@ -49,6 +47,6 @@ export function RatingStars({ rating, className = "" }) {
             className: `text-amber-400 tracking-wider ${className}`,
             "aria-label": `${rating} de 5 estrellas`
         },
-        `${"★".repeat(rating)}${"☆".repeat(5 - rating)}`
+        `${"\u2605".repeat(rating)}${"\u2606".repeat(5 - rating)}`
     );
 }
