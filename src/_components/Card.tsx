@@ -1,9 +1,12 @@
 import { Link } from "react-router-dom";
+import { RatingStars, useProductRating } from "../lib/reviews";
 
 const Card = (
     {id, nombre, imagen, precio}:
     {id: number, nombre: string, imagen: string, precio: number}
 ) => {
+    const productRating = useProductRating(id);
+
     return (
         <Link to={`/producto-${id}`} className="block w-full min-w-0 rounded-xl bg-neutral-900 cursor-pointer transition-colors duration-300">
             <img loading="lazy" className="w-full object-cover rounded-t-xl h-48" src={imagen} alt={nombre} />
@@ -12,6 +15,10 @@ const Card = (
                 <div className="min-w-0 flex-1">
                     <h3 className="mb-1 truncate font-medium">{nombre}</h3>
                     <p className="mb-1 text-md text-neutral-400 font-semibold">${precio}</p>
+                    <div className="flex items-center gap-1">
+                        <RatingStars rating={productRating.rating} className="text-xs" />
+                        <span className="text-[10px] text-neutral-500">({productRating.count})</span>
+                    </div>
                 </div>
             </div>
         </Link>
