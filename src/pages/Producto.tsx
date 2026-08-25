@@ -52,12 +52,12 @@ function Producto() {
     };
 
     if (isLoading) {
-        return <main className="mx-auto flex min-h-screen max-w-4xl items-center justify-center px-8">Cargando producto...</main>;
+        return <main className="mx-auto flex h-screen max-w-5xl items-center justify-center px-8">Cargando producto...</main>;
     }
 
     if (!product) {
         return (
-            <main className="mx-auto flex min-h-screen max-w-4xl flex-col px-8 justify-center">
+            <main className="mx-auto flex min-h-screen max-w-5xl flex-col px-8 justify-center">
                 <h2 className="text-5xl font-semibold mb-4 text-center">
                     Producto no encontrado
                 </h2>
