@@ -2,20 +2,25 @@ import { Link, useParams } from "react-router-dom";
 import ReactConfetti from "react-confetti";
 import { useEffect, useState } from "react";
 import Featured from "../_components/Featured";
+import Reviews from "../_components/reviews";
 import { supabase } from "../lib/supabaseClient";
 import type { Product } from "../../types/Product";
 import { ShoppingCart } from "lucide-react";
+import { RatingStars, useProductRating } from "../lib/reviews";
 
 function Producto() {
     const { productId } = useParams();
-    const [prefix, value] = productId?.split("-") ?? [];
 
-    const id = prefix === "producto" && /^\d+$/.test(value)
+    const [prefix, value] = productId?.split("-") ?? [];
+    const id = prefix === "producto" && /^\d+$/.test(value) 
         ? Number(value)
         : null;
-        
+
     const [product, setProduct] = useState<Product | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [showConfetti, setShowConfetti] = useState(false);
+
+    const productRating = useProductRating(id);
 
     useEffect(() => {
         async function getProduct() {
@@ -24,33 +29,22 @@ function Producto() {
                 return;
             }
 
-            const { data, error } = await supabase
-                .from("products")
-                .select()
-                .eq("product_id", id)
-                .maybeSingle();
-
-            if (error) {
-                console.error("Error fetching product:", error);
-            }
-
+            const { data, error } = await supabase.from("products").select().eq("product_id", id).maybeSingle();
+            if (error) console.error("Error fetching product:", error);
             setProduct(data ?? null);
             setIsLoading(false);
         }
-
         getProduct();
-    }, [id]);
-
-    const [showConfetti, setShowConfetti] = useState(false);
-
+    }, [id]);    
+    
     const handleComprar = () => {
         setShowConfetti(true);
-
+        
         setTimeout(() => {
             setShowConfetti(false);
         }, 5000);
     };
-
+    
     if (isLoading) {
         return <main className="mx-auto flex h-screen max-w-5xl items-center justify-center px-8">Cargando producto...</main>;
     }
@@ -93,7 +87,7 @@ function Producto() {
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 pb-8">
                 <img
                     loading="lazy"
-                    //src={product.imagen}
+                    src={"product.imagen"}
                     alt={product.nombre}
                     className="rounded-2xl bg-neutral-900 block w-full object-contain transition-all duration-300"
                 />
@@ -106,6 +100,11 @@ function Producto() {
                     <h1 className="text-5xl font-semibold mb-4">
                         {product.nombre}
                     </h1>
+
+                    <div className="flex items-center gap-2 mb-3">
+                        <RatingStars rating={productRating.rating} className="text-sm" />
+                        <span className="text-xs text-neutral-500">{productRating.count > 0 ? `${productRating.rating}/5 (${productRating.count})` : "Sin opiniones"}</span>
+                    </div>
 
                     <p className="text-3xl font-light mb-2">
                         ${product.precio}
@@ -138,7 +137,8 @@ function Producto() {
                     </div>
                 </section>
             </div>
-
+        
+            {id !== null && <Reviews productId={id} />}
             <Featured/>
         </main>
     );

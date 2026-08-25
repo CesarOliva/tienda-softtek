@@ -1,8 +1,11 @@
 import { ShoppingCart } from 'lucide-react';
 import './styles/ProductList.css'
+import { RatingStars, useProductRating } from "../lib/reviews";
 import { Link } from "react-router-dom";
 
 function ProductCard({ product }) {
+    const productRating = useProductRating(product.product_id);
+
     return (
         <Link to={`/producto-${product.product_id}`} className="ProductCard">
             <div className="ProductImageContainer">
@@ -20,6 +23,11 @@ function ProductCard({ product }) {
                     <div className="Precio">
                         <span className="Currency">MXN</span>
                         <span>${Number(product.precio).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                        <RatingStars rating={productRating.rating} className="text-xs" />
+                        <span className="text-xs text-neutral-400">({productRating.count})</span>
                     </div>
 
                     <div className="Descripcion">
