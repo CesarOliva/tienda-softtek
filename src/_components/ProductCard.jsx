@@ -25,7 +25,7 @@ function ProductCard({ product }) {
                         <span>${Number(product.precio).toLocaleString("es-MX", { minimumFractionDigits: 2 })}</span>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 mb-2">
                         <RatingStars rating={productRating.rating} className="text-xs" />
                         <span className="text-xs text-neutral-400">({productRating.count})</span>
                     </div>
