@@ -47,7 +47,7 @@ h2.catalogo{
 .ProductInfo h3 {
     margin: 0 0 4px;
     color: white;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 600;
     line-height: 1.25;
     display: -webkit-box;
@@ -91,7 +91,7 @@ h2.catalogo{
     gap: 4px;
     margin: 8px 0 6px;
     color: #eee;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     line-height: 1.1;
 }

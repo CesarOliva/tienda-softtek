@@ -10,7 +10,7 @@ const Card = (
 
             <div className="flex min-w-0 gap-1 p-4">
                 <div className="min-w-0 flex-1">
-                    <h3 className="mb-1 truncate font-medium">{nombre}</h3>
+                    <h3 className="mb-1 truncate font-medium text-[18px]">{nombre}</h3>
                     <p className="mb-1 text-md text-neutral-400 font-semibold">${precio}</p>
                 </div>
             </div>

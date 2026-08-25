@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import "./Carousel.css";
+import "./styles/Carousel.css";
 import { supabase } from "../lib/supabaseClient";
 
 export default function Carousel() {

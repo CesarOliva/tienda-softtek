@@ -1,9 +1,28 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { productos } from "../pages/Catalogo";
-import Card from "./Card";
+import Card from "./GridCard";
+import { useEffect, useState } from "react";
+import type { Product } from "../../types/Product";
+import { supabase } from "../lib/supabaseClient";
 
 const Featured = () => {
+    const [products, setProducts] = useState<Product[]>([]);
+
+    useEffect(() => {
+        getProducts();
+    }, [])
+
+    async function getProducts(){
+        const { data, error } = await supabase.from('products').select();
+
+        if(error) {
+            console.error('Error fetching products:', error);
+            return
+        }
+
+        setProducts(data);
+    }
+
     return (
         <div className="">
             <div className="flex items-center justify-between">
@@ -12,11 +31,11 @@ const Featured = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-4 mt-6">
-                {productos.slice(0, 4).map((product) => (
+                {products.slice(0, 4).map((product: Product) => (
                     <Card
-                        key={product.id} 
-                        id={product.id}
-                        imagen={product.imagen}
+                        key={product.product_id} 
+                        id={product.product_id}
+                        imagen={"product.imagen"}
                         nombre={product.nombre}
                         precio={product.precio}
                     />
