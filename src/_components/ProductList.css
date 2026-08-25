@@ -1,18 +1,10 @@
-body {
-    background-color: #0d0d0d;
-    color: #fafafa;
-    font-family: 'Inter', sans-serif;
-    font-size: 16px;
-    margin: 0;
-}
-
 h2.catalogo{
     text-align: center;
 }
 
 .Product {
     width: 90%;
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
 
     display: flex;
@@ -22,15 +14,16 @@ h2.catalogo{
 
 .ProductCard {
     width: 100%;
-    min-height: 180px;
+    min-height: 200px;
     box-sizing: border-box;
 
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 14px;
 
-    border: 1px solid #444;
-    padding: 1rem 1.2rem;
+    border: 0;
+    border-radius: 4px;
+    padding: 0;
     margin: 0;
 
     background-color: #151515;
@@ -42,35 +35,107 @@ h2.catalogo{
 }
 
 .ProductInfo {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: stretch;
     flex: 1;
+    min-width: 0;
+    padding: 20px 6px;
+}
+
+.ProductInfo h3 {
+    margin: 0 0 4px;
+    color: white;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
 }
 
 .ProductImageContainer {
-    width: 160px;
-    height: 160px;
-
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 4px 0 0 4px;
     flex-shrink: 0;
-    margin-left: 20px;
-
     overflow: hidden;
+    background-color: #111;
+}
 
-    background-color: #222;
+.ProductInfo button{
+    width: fit-content;
 }
 
 .ProductImage {
     width: 100%;
     height: 100%;
-
-    object-fit: cover;
+    border-radius: 4px;
+    object-fit: contain;
     display: block;
 }
+
 
 .ProductCard:hover {
     transform: translateY(-3px);
     border-color: #777;
+    box-shadow: 0 1px 6px rgb(0 0 0 / 14%);
 }
 
-
 .Precio {
-    color: #fafafa;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin: 8px 0 6px;
+    color: #eee;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.Currency {
+    font-size: 14px;
+}
+
+.Descripcion p{
+    margin: 0;
+    color: #ccc;
+    font-size: 16px;
+    line-height: 1.35;
+}
+
+@media (max-width: 520px) {
+    .Product {
+        width: 100%;
+    }
+
+    .ProductCard {
+        min-height: 150px;
+        gap: 10px;
+    }
+
+    .ProductImageContainer {
+        width: 150px;
+        height: 150px;
+    }
+
+    .ProductInfo {
+        padding: 7px 8px 7px 0;
+    }
+
+    .ProductInfo h3 {
+        font-size: 14px;
+    }
+
+    .Precio {
+        margin-top: 7px;
+        font-size: 18px;
+    }
+
+    .Descripcion p{
+        font-size: 14px;
+    }
 }

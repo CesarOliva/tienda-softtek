@@ -4,6 +4,7 @@ import ReactConfetti from "react-confetti";
 import { useState } from "react";
 import Menu from "../_components/Menu";
 import Featured from "../_components/Featured";
+import { ShoppingCart } from "lucide-react";
 
 function Producto() {
     const { productId } = useParams();
@@ -49,7 +50,7 @@ function Producto() {
     }
 
     return (
-        <main className="mx-auto flex md:min-h-screen max-w-4xl flex-col gap-8 px-8 md:justify-center mt-12 md:mb-24">
+        <main className="mx-auto flex md:min-h-screen max-w-5xl flex-col gap-8 px-8 md:justify-center mt-12 md:mb-24">
 
             {showConfetti && (
                 <ReactConfetti
@@ -85,14 +86,27 @@ function Producto() {
                         {product.descripcion}
                     </p>
 
-                    <button
-                        type="button"
-                        disabled={product.stock == 0}
-                        onClick={handleComprar}
-                        className="disabled:cursor-not-allowed cursor-pointer text-lg gap-2 disabled:bg-neutral-800 bg-neutral-900 hover:bg-neutral-800 py-2 px-6 rounded-lg"
-                    >
-                        {product.stock == 0 ? "No disponible" : "Comprar"}
-                    </button>
+                    <div className="flex flex-col md:flex-row w-full items-center gap-2">
+                        <button
+                            type="button"
+                            disabled={product.stock == 0}
+                            onClick={handleComprar}
+                            className="w-full md:w-1/2 disabled:cursor-not-allowed cursor-pointer text-lg gap-2 disabled:bg-neutral-800 bg-neutral-900 hover:bg-neutral-800 py-2 px-6 rounded-lg"
+                        >
+                            {product.stock == 0 ? "No disponible" : "Comprar"}
+                        </button>
+
+                        {product.stock > 0 && (
+                            <button
+                                type="button"
+                                onClick={()=>{}}
+                                className="flex items-center w-full md:w-1/2 cursor-pointer text-lg gap-2 bg-neutral-200 hover:bg-neutral-300 py-2 px-6 rounded-lg text-black justify-center"
+                            >
+                                <ShoppingCart className="size-5 mr-2" />
+                                Agregar al carrito
+                            </button>
+                        )}
+                    </div>
                 </section>
             </div>
 
