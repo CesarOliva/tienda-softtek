@@ -1,9 +1,9 @@
 import { Link, useParams } from "react-router-dom";
-import { productos } from "./Catalogo";
 import ReactConfetti from "react-confetti";
-import { useState } from "react";
-import Menu from "../_components/Menu";
+import { useEffect, useState } from "react";
 import Featured from "../_components/Featured";
+import { supabase } from "../lib/supabaseClient";
+import type { Product } from "../../types/Product";
 
 function Producto() {
     const { productId } = useParams();
@@ -13,7 +13,32 @@ function Producto() {
         ? Number(value)
         : null;
         
-    const product = productos.find(producto => producto.id === id);
+    const [product, setProduct] = useState<Product | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function getProduct() {
+            if (id === null) {
+                setIsLoading(false);
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from("products")
+                .select()
+                .eq("product_id", id)
+                .maybeSingle();
+
+            if (error) {
+                console.error("Error fetching product:", error);
+            }
+
+            setProduct(data ?? null);
+            setIsLoading(false);
+        }
+
+        getProduct();
+    }, [id]);
 
     const [showConfetti, setShowConfetti] = useState(false);
 
@@ -24,6 +49,10 @@ function Producto() {
             setShowConfetti(false);
         }, 5000);
     };
+
+    if (isLoading) {
+        return <main className="mx-auto flex min-h-screen max-w-4xl items-center justify-center px-8">Cargando producto...</main>;
+    }
 
     if (!product) {
         return (
@@ -63,7 +92,7 @@ function Producto() {
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 pb-8">
                 <img
                     loading="lazy"
-                    src={product.imagen}
+                    //src={product.imagen}
                     alt={product.nombre}
                     className="rounded-2xl bg-neutral-900 block w-full object-contain transition-all duration-300"
                 />
