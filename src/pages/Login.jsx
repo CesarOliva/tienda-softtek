@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Cpu, Mail, Lock, ArrowRight } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 
@@ -9,29 +9,36 @@ const Login = () => {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
+    const navigate = useNavigate();
+
     const handleLogin = async (e) => {
         e.preventDefault();
 
         setError("");
         setLoading(true);
 
+        const emailLimpio = email.trim().toLowerCase();
+
         const { error } = await supabase.auth.signInWithPassword({
-            email,
+            email: emailLimpio,
             password,
         });
 
         if (error) {
             setError(error.message);
+            setLoading(false);
+            return;
         }
 
         setLoading(false);
+
+        navigate("/profile");
     };
 
     return (
         <main className="min-h-[calc(100vh-97px)] bg-neutral-950 flex items-center justify-center px-6 py-16">
             <div className="w-full max-w-md">
-
-                {/* Logo / encabezado */}
+                
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-5">
                         <div className="flex items-center justify-center size-14 rounded-xl bg-neutral-900 border border-neutral-800 shadow-lg">
@@ -48,12 +55,11 @@ const Login = () => {
                     </p>
                 </div>
 
-                {/* Card */}
+                
                 <div className="bg-neutral-900/70 border border-neutral-800 rounded-xl p-7 shadow-2xl backdrop-blur-sm">
 
                     <form onSubmit={handleLogin} className="space-y-5">
 
-                        {/* Email */}
                         <div>
                             <label className="block text-sm font-medium text-neutral-300 mb-2">
                                 Correo electrónico
@@ -73,7 +79,6 @@ const Login = () => {
                             </div>
                         </div>
 
-                        {/* Password */}
                         <div>
                             <div className="flex items-center justify-between mb-2">
                                 <label className="text-sm font-medium text-neutral-300">
@@ -102,16 +107,16 @@ const Login = () => {
                             </div>
                         </div>
 
-                        {/* Error */}
+                        
                         {error && (
-                            <div className="bg-red-950/40 border border-red-900/50 rounded-lg px-4 py-3">
+                            <div>
                                 <p className="text-sm text-red-400">
                                     {error}
                                 </p>
                             </div>
                         )}
 
-                        {/* Button */}
+                        
                         <button
                             type="submit"
                             disabled={loading}
@@ -126,7 +131,7 @@ const Login = () => {
 
                     </form>
 
-                    {/* Register */}
+                    
                     <div className="mt-7 pt-6 border-t border-neutral-800 text-center">
                         <p className="text-sm text-neutral-500">
                             ¿Todavía no tienes una cuenta?
@@ -141,7 +146,7 @@ const Login = () => {
                     </div>
                 </div>
 
-                {/* Footer */}
+                
                 <p className="text-center text-xs text-neutral-600 mt-6">
                     © 2026 TechZone. Todos los derechos reservados.
                 </p>

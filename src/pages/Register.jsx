@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { Link } from "react-router-dom";
-import { Eye, EyeOff, Cpu } from "lucide-react"; // Or use react-icons/fa (FaEye, FaEyeSlash)
-
+import { Eye, EyeOff, Cpu } from "lucide-react";
 
 export default function register() {
     const [email, setEmail] = useState('')
@@ -12,6 +11,7 @@ export default function register() {
     const [error, setError] = useState('')
     const [message, setMessage] = useState('')
     const [showPassword, setShowPassword] = useState(false);
+    const [confirmPassword, setConfirmPassword] = useState('')
 
     const handleRegister = async (e) => {
         e.preventDefault()
@@ -19,22 +19,43 @@ export default function register() {
         setError('')
         setMessage('')
 
+        if (password.length < 6) {
+            setError('La contraseña debe tener al menos 6 caracteres.')
+            return
+        }
+
+        if (password !== confirmPassword) {
+            setError('Las contraseñas no coinciden.')
+            return
+        }
+
+        const emailLimpio = email.trim().toLowerCase()
+
+        console.log('EMAIL ORIGINAL:', JSON.stringify(email))
+        console.log('EMAIL LIMPIO:', JSON.stringify(emailLimpio))
+
         const { data, error } = await supabase.auth.signUp({
-            email,
+            email: emailLimpio,
             password,
-            nombre,
+            options: {
+                data: {
+                    nombre,
+                    apellido,
+                    display_name: `${nombre} ${apellido}`,
+                }
+            }
         })
+
+        console.log('DATA:', data)
+        console.log('ERROR:', error)
 
         if (error) {
             setError(error.message)
             return
         }
 
-        console.log(data)
-
         setMessage('Cuenta creada. Revisa tu correo para confirmar tu cuenta.')
     }
-
 
     return (
         <main className="bg-neutral-950 text-neutral-200 px-6 py-16">
@@ -62,11 +83,12 @@ export default function register() {
 
                     <div className="flex gap-4 mb-5">
                         <div className="w-1/2">
-                            <label> Nombre</label>
+                            <label className="block text-sm text-neutral-300 mb-2"> Nombre</label>
 
                             <input
                                 type="text"
                                 placeholder="Juan"
+                                onChange={(e) => setNombre(e.target.value)}
                                 required
                                 className="w-full bg-neutral-950 border border-neutral-800 rounded-md px-3 py-2 text-sm text-neutral-200 placeholder-neutral-600 outline-none focus:border-neutral-500"
                             />
@@ -80,10 +102,12 @@ export default function register() {
                             <input
                                 type="text"
                                 placeholder="Perez"
+                                onChange={(e) => setApellido(e.target.value)}
                                 required
                                 className="w-full bg-neutral-950 border border-neutral-800 rounded-md px-3 py-2 text-sm text-neutral-200 placeholder-neutral-600 outline-none focus:border-neutral-500"
                             />
-                        </div>           </div>
+                        </div>
+                    </div>
 
 
                     <div className="mb-5">
@@ -129,6 +153,22 @@ export default function register() {
                         </div>
                     </div>
 
+                    <div className="mb-5">
+                        <label className="block text-sm text-neutral-300 mb-2">
+                            Confirmar contraseña
+                        </label>
+
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="••••••••"
+                                required
+                                className="w-full bg-neutral-950 border border-neutral-800 rounded-md px-3 py-2 text-sm text-neutral-200 placeholder-neutral-600 outline-none focus:border-neutral-500"
+                            />
+                        </div>
+                    </div>
 
                     {error && (
                         <p className="text-sm text-red-400 mb-4">

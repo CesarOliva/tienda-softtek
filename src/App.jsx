@@ -9,6 +9,7 @@ import Main from './pages/Main';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Checkout from './pages/Checkout';
+import Profile from './pages/Profile';
 import { Toaster } from 'sonner';
 
 function Layout() {
@@ -32,6 +33,7 @@ function App() {
             <Route path='/' element={<Main />} />
             <Route path='/login' element={<Login />} />
             <Route path='/register' element={<Register />} />
+            <Route path= '/profile' element={<Profile/>} />
             <Route path='/catalogo' element={<Catalogo />} />
             <Route path='/:productId' element={<Producto />} />
             <Route path="/checkout" element={<Checkout />} />
