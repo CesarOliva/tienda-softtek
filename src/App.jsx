@@ -7,6 +7,7 @@ import Footer from './_components/Footer';
 import Main from './pages/Main';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import { CartProvider } from './context/CartContext';
 
 function Layout() {
   return (
@@ -21,17 +22,19 @@ function Layout() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path='/' element={<Main />} />
-          <Route path='/login' element={<Login />} />
-          <Route path='/register' element={<Register />} />
-          <Route path='/catalogo' element={<Catalogo />} />
-          <Route path='/:productId' element={<Producto />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <CartProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path='/' element={<Main />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/register' element={<Register />} />
+            <Route path='/catalogo' element={<Catalogo />} />
+            <Route path='/:productId' element={<Producto />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </CartProvider>
   );
 }
 

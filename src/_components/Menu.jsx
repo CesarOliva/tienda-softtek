@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Cpu, Search as SearchIcon, ShoppingCart, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import ProductSearch from "./Search";
+import Cart from "./Cart";
+import { useCart } from "../context/useCart";
 
 const Menu = () => {
     const [mostrarBusqueda, setMostrarBusqueda] = useState(false);
     const [mostrarCarrito, setMostrarCarrito] = useState(false);
     const [mostrarPerfil, setMostrarPerfil] = useState(false);
     const navRef = useRef(null);
+    const { cartCount } = useCart();
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -60,7 +63,7 @@ const Menu = () => {
                     </button>
                     <button
                         type="button"
-                        className={`transition-colors ${mostrarCarrito ? "text-[#fafafa]" : "text-neutral-300 hover:text-[#fafafa]"} cursor-pointer`}
+                        className={`relative transition-colors ${mostrarCarrito ? "text-[#fafafa]" : "text-neutral-300 hover:text-[#fafafa]"} cursor-pointer`}
                         onClick={() => {
                             setMostrarCarrito(!mostrarCarrito);
                             setMostrarBusqueda(false);
@@ -68,11 +71,13 @@ const Menu = () => {
                         }}
                         aria-label="Abrir carrito"
                     >
-                        <ShoppingCart className="size-6" />
+                        <ShoppingCart className={`size-6 cursor-pointer transition-colors ${mostrarCarrito ? 'text-[#fafafa]' : 'text-neutral-300 hover:text-[#fafafa]'}`} />
+                        {cartCount > 0 && <span className="absolute -right-3 -top-3 flex size-5 items-center justify-center rounded-full bg-white text-[11px] font-bold text-black">{cartCount}</span>}
                     </button>
+                    
                     <button
                         type="button"
-                        className={`transition-colors ${mostrarPerfil ? "text-[#fafafa]" : "text-neutral-300 hover:text-[#fafafa]"} cursor-pointer`}
+                        className={`size-6 cursor-pointer transition-colors ${mostrarPerfil ? 'text-[#fafafa]' : 'text-neutral-300 hover:text-[#fafafa]'}`}
                         onClick={() => {
                             setMostrarPerfil(!mostrarPerfil);
                             setMostrarBusqueda(false);
@@ -95,12 +100,7 @@ const Menu = () => {
                     )}
 
                     {mostrarCarrito && (
-                        <div className="absolute right-0 top-10 z-50 w-64 rounded-md border border-neutral-800 bg-neutral-900 p-4 text-neutral-200 shadow-xl">
-                            <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">Tu carrito</h4>
-                            <hr className="mb-2 border-neutral-800" />
-                            <p className="py-4 text-center text-xs text-neutral-500">El carrito está vacío</p>
-                            <button type="button" className="w-full rounded bg-neutral-800 py-2 text-xs font-medium transition-colors hover:bg-neutral-700">Ver detalles</button>
-                        </div>
+                        <Cart/>
                     )}
                 </div>
             </nav>
