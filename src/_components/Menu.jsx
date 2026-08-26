@@ -49,8 +49,10 @@ const Menu = ({ searchQuery, setSearchQuery }) => {
                         <div className="absolute right-0 top-10 w-48 bg-neutral-900 border border-neutral-800 rounded-md p-4 shadow-xl z-50 text-neutral-200">
                             <h4 className="font-semibold text-xs text-neutral-400 mb-2 uppercase tracking-wider">Mi Cuenta</h4>
                             <hr className="border-neutral-800 mb-2" />
-                            <button className="w-full text-left text-sm py-1 hover:text-white transition-colors">Iniciar Sesión</button>
-                            <button className="w-full text-left text-sm py-1 hover:text-white transition-colors">Registrarse</button>
+                            <div className="flex w-full flex-col">
+                                <Link to="/login" className="cursor-pointer w-full text-left text-sm py-1 hover:text-white transition-colors">Iniciar Sesión</Link>
+                                <Link to="/register" className="cursor-pointer w-full text-left text-sm py-1 hover:text-white transition-colors">Registrarse</Link>
+                            </div>
                         </div>
                     )}
 

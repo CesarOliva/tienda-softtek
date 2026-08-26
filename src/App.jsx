@@ -6,6 +6,8 @@ import Menu from './_components/Menu';
 import ScrollToTop from './_components/scrollToTop';
 import Footer from './_components/Footer';
 import Main from './pages/Main';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 function Layout({ searchQuery, setSearchQuery }) {
   return (
@@ -26,6 +28,8 @@ function App() {
       <Routes>
         <Route element={<Layout searchQuery={searchQuery} setSearchQuery={setSearchQuery} />}>
           <Route path='/' element={<Main />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register />} />
           <Route path='/catalogo' element={<Catalogo />} />
           <Route path='/:productId' element={<Producto />} />
         </Route>
