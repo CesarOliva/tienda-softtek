@@ -4,14 +4,16 @@ import "./Carousel.css";
 
 const products = [
   {
-    src: "https://m.media-amazon.com/images/I/61QY3V6A-NL.jpg",
-    title: "Sube de nivel...",
-    text: "Mouse ultra ligeo 69 gramos.",
+    product_id: 8,
+    //imagen: "https://m.media-amazon.com/images/I/61QY3V6A-NL.jpg",
+    nombre: "Mouse Gamer RGB 7200 DPI",
+    descripcion: "Mouse gamer con iluminacion RGB y alta precision",
   },
   {
-    src: "https://m.media-amazon.com/images/I/71BFvz7N32L._AC_.jpg",
-    title: "30% de descuento",
-    text: "Audifonoscde la marca sony",
+    product_id: 13,
+    //imagen: "https://m.media-amazon.com/images/I/71BFvz7N32L._AC_.jpg",
+    nombre: "Teclado Mecanico RGB",
+    descripcion: "Teclado mecanico con retroiluminacion RGB",
   },
   {
     product_id: 18,
@@ -48,8 +50,8 @@ export default function Carousel() {
       >
         <div className="carousel-copy">
           <span>TIENDA</span>
-          <h1>{images[currentIndex].title}</h1>
-          <p>{images[currentIndex].text}</p>
+          <h1>{products[currentIndex].nombre}</h1>
+          <p>{products[currentIndex].descripcion}</p>
         </div>
         <img src={products[currentIndex].imagen} alt={products[currentIndex].nombre} />
       </Link>
