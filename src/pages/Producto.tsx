@@ -8,6 +8,7 @@ import type { Product } from "../../types/Product";
 import { ShoppingCart } from "lucide-react";
 import { RatingStars, useProductRating } from "../lib/reviews";
 import { addProductImage } from "../lib/productImages";
+import { useCart } from "../context/useCart";
 
 function Producto() {
     const { productId } = useParams();
@@ -24,6 +25,7 @@ function Producto() {
     const [showConfetti, setShowConfetti] = useState(false);
 
     const productRating = useProductRating(id);
+    const { addItem } = useCart();
 
     useEffect(() => {
         async function getProduct() {
@@ -224,7 +226,13 @@ function Producto() {
                         {product.stock > 0 && (
                             <button
                                 type="button"
-                                onClick={()=>{}}
+                                onClick={() => addItem({
+                                    product_id: product.product_id,
+                                    nombre: product.nombre,
+                                    imagen: product.imagen ?? "",
+                                    precio: product.precio,
+                                    stock: product.stock,
+                                })}
                                 className="flex items-center w-full md:w-1/2 cursor-pointer text-lg gap-2 bg-neutral-200 hover:bg-neutral-300 py-2 px-6 rounded-lg text-black justify-center"
                             >
                                 <ShoppingCart className="size-5 mr-2" />
