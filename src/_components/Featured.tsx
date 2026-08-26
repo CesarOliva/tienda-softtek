@@ -35,9 +35,10 @@ const Featured = () => {
                     <Card
                         key={product.product_id} 
                         id={product.product_id}
-                        imagen={"product.imagen"}
+                        imagen={product.imagen}
                         nombre={product.nombre}
                         precio={product.precio}
+                        stock={product.stock}
                     />
                 ))}
             </div>

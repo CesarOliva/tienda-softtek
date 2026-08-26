@@ -2,9 +2,11 @@ import { ShoppingCart } from 'lucide-react';
 import './styles/ProductList.css'
 import { RatingStars, useProductRating } from "../lib/reviews";
 import { Link } from "react-router-dom";
+import { useCart } from "../context/useCart";
 
 function ProductCard({ product }) {
     const productRating = useProductRating(product.product_id);
+    const { addItem } = useCart();
 
     return (
         <Link to={`/producto-${product.product_id}`} className="ProductCard">
@@ -38,7 +40,11 @@ function ProductCard({ product }) {
                 {product.stock > 0 && (
                     <button
                         type="button"
-                        onClick={()=>{}}
+                        onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            addItem(product);
+                        }}
                         className="flex items-center cursor-pointer text-sm gap-3 bg-neutral-200 hover:bg-neutral-300 py-2 px-4 rounded-lg text-black"
                     >
                         <ShoppingCart className="size-4" />

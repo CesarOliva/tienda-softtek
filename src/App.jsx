@@ -5,6 +5,7 @@ import Producto from './pages/Producto';
 import Menu from './_components/Menu';
 import Footer from './_components/Footer';
 import Main from './pages/Main';
+import { CartProvider } from './context/CartContext';
 
 function Layout({ searchQuery, setSearchQuery }) {
   return (
@@ -20,15 +21,17 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<Layout searchQuery={searchQuery} setSearchQuery={setSearchQuery} />}>
-          <Route path='/' element={<Main />} />
-          <Route path='/catalogo' element={<Catalogo />} />
-          <Route path='/:productId' element={<Producto />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <CartProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout searchQuery={searchQuery} setSearchQuery={setSearchQuery} />}>
+            <Route path='/' element={<Main />} />
+            <Route path='/catalogo' element={<Catalogo />} />
+            <Route path='/:productId' element={<Producto />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </CartProvider>
   );
 }
 
