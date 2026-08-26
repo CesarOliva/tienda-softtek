@@ -16,6 +16,7 @@ export type CartContextValue = {
     items: CartItem[];
     addItem: (product: CartProduct) => void;
     removeItem: (productId: number) => void;
+    clearCart: () => void;
     cartCount: number;
     cartTotal: number;
 };
