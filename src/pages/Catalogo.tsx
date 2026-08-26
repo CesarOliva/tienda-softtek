@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ProductCard from "../_components/ProductCard";
 import { supabase } from "../lib/supabaseClient";
+import { addProductImage } from "../lib/productImages";
 import type { Product } from "../../types/Product";
 
 export const productos = [
@@ -102,14 +103,16 @@ const Catalogo = () => {
     }, [])
 
     async function getProducts(){
-        const { data, error } = await supabase.from('products').select();
+        const { data, error } = await supabase
+            .from('products')
+            .select('*, images (ruta)');
 
         if(error) {
             console.error('Error fetching products:', error);
             return
         }
 
-        setProducts(data);
+        setProducts((data ?? []).map(addProductImage));
     }
 
     return (

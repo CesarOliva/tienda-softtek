@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Carousel.css";
 import { supabase } from "../lib/supabaseClient";
+import { addProductImage } from "../lib/productImages";
 
 export default function Carousel() {
   const [products, setProducts] = useState([]);
@@ -11,7 +12,7 @@ export default function Carousel() {
     async function getProducts() {
       const { data, error } = await supabase
         .from("products")
-        .select()
+        .select("*, images (ruta)")
         .order("product_id")
         .limit(3);
 
@@ -20,7 +21,7 @@ export default function Carousel() {
         return;
       }
 
-      setProducts(data ?? []);
+      setProducts((data ?? []).map(addProductImage));
     }
 
     getProducts();

@@ -1,4 +1,3 @@
-import React from "react";
 import './ProductList.css'
 import { Link } from "react-router-dom";
 
@@ -23,13 +22,13 @@ function ProductCard({ product }) {
                 </p>
             </div>
 
-            {/* <div className="ProductImageContainer">
+            <div className="ProductImageContainer">
                 <img
                     src={product.imagen}
                     alt={product.nombre}
                     className="ProductImage"
                 />
-            </div> */}
+            </div>
 
         </Link>
     );

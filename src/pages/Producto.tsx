@@ -3,6 +3,7 @@ import ReactConfetti from "react-confetti";
 import { useEffect, useState } from "react";
 import Featured from "../_components/Featured";
 import { supabase } from "../lib/supabaseClient";
+import { addProductImage } from "../lib/productImages";
 import type { Product } from "../../types/Product";
 
 function Producto() {
@@ -14,6 +15,8 @@ function Producto() {
         : null;
         
     const [product, setProduct] = useState<Product | null>(null);
+    const [imageUrls, setImageUrls] = useState<string[]>([]);
+    const [currentImage, setCurrentImage] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -33,7 +36,29 @@ function Producto() {
                 console.error("Error fetching product:", error);
             }
 
-            setProduct(data ?? null);
+            if (!data) {
+                setProduct(null);
+                setImageUrls([]);
+                setIsLoading(false);
+                return;
+            }
+
+            const { data: images, error: imagesError } = await supabase
+                .from("images")
+                .select("ruta")
+                .eq("product_id", id);
+
+            if (imagesError) {
+                console.error("Error fetching product images:", imagesError);
+            }
+
+            const urls = (images ?? [])
+                .map((image) => image.ruta)
+                .filter(Boolean);
+
+            setImageUrls(urls);
+            setCurrentImage(0);
+            setProduct(addProductImage({ ...data, images: images ?? [] }));
             setIsLoading(false);
         }
 
@@ -90,12 +115,53 @@ function Producto() {
             )}
 
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 pb-8">
-                <img
-                    loading="lazy"
-                    //src={product.imagen}
-                    alt={product.nombre}
-                    className="rounded-2xl bg-neutral-900 block w-full object-contain transition-all duration-300"
-                />
+                <div className="flex flex-col gap-3">
+                    <div className="relative flex h-80 items-center justify-center rounded-2xl bg-neutral-900">
+                        {imageUrls.length > 0 && (
+                            <img
+                                loading="lazy"
+                                src={imageUrls[currentImage]}
+                                alt={`${product.nombre} ${currentImage + 1}`}
+                                className="block h-full w-full rounded-2xl object-contain transition-all duration-300"
+                            />
+                        )}
+
+                        {imageUrls.length > 1 && (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentImage((currentImage - 1 + imageUrls.length) % imageUrls.length)}
+                                    aria-label="Imagen anterior"
+                                    className="absolute left-3 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-xl hover:bg-black/80"
+                                >
+                                    &#10094;
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentImage((currentImage + 1) % imageUrls.length)}
+                                    aria-label="Siguiente imagen"
+                                    className="absolute right-3 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-xl hover:bg-black/80"
+                                >
+                                    &#10095;
+                                </button>
+                            </>
+                        )}
+                    </div>
+
+                    {imageUrls.length > 1 && (
+                        <div className="flex justify-center gap-2">
+                            {imageUrls.map((imageUrl, index) => (
+                                <button
+                                    type="button"
+                                    key={imageUrl}
+                                    onClick={() => setCurrentImage(index)}
+                                    aria-label={`Ver imagen ${index + 1}`}
+                                    className={`size-2 rounded-full ${index === currentImage ? "bg-white" : "bg-neutral-600"}`}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
 
                 <section className="flex flex-col justify-center">
                     <span className="text-xs uppercase tracking-[0.35em] text-neutral-400 mb-4 block">
