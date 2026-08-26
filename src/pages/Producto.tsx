@@ -7,6 +7,7 @@ import { supabase } from "../lib/supabaseClient";
 import type { Product } from "../../types/Product";
 import { ShoppingCart } from "lucide-react";
 import { RatingStars, useProductRating } from "../lib/reviews";
+import { addProductImage } from "../lib/productImages";
 
 function Producto() {
     const { productId } = useParams();
@@ -31,17 +32,50 @@ function Producto() {
                 return;
             }
 
-            const { data, error } = await supabase.from("products").select().eq("product_id", id).maybeSingle();
-            if (error) console.error("Error fetching product:", error);
-            setProduct(data ?? null);
+            const { data, error } = await supabase
+                .from("products")
+                .select()
+                .eq("product_id", id)
+                .maybeSingle();
+
+            if (error) {
+                console.error("Error fetching product:", error);
+            }
+
+            if (!data) {
+                setProduct(null);
+                setImageUrls([]);
+                setIsLoading(false);
+                return;
+            }
+
+            const { data: images, error: imagesError } = await supabase
+                .from("images")
+                .select("ruta")
+                .eq("product_id", id);
+
+            if (imagesError) {
+                console.error("Error fetching product images:", imagesError);
+            }
+
+            const urls = (images ?? [])
+                .map((image) => image.ruta)
+                .filter(Boolean);
+
+            console.log("Fetched product images:", urls);
+
+            setImageUrls(urls);
+            setCurrentImage(0);
+            setProduct(addProductImage({ ...data, images: images ?? [] }));
             setIsLoading(false);
         }
+
         getProduct();
-    }, [id]);    
-    
+    }, [id]);
+
     const handleComprar = () => {
         setShowConfetti(true);
-        
+
         setTimeout(() => {
             setShowConfetti(false);
         }, 5000);
@@ -165,8 +199,8 @@ function Producto() {
                     </h1>
 
                     <div className="flex items-center gap-2 mb-3">
-                        <RatingStars rating={productRating.rating} className="text-sm" />
-                        <span className="text-xs text-neutral-500">{productRating.count > 0 ? `${productRating.rating}/5 (${productRating.count})` : "Sin opiniones"}</span>
+                        <RatingStars rating={productRating.rating} className="text-lg" />
+                        <span className="text-sm text-neutral-500">{productRating.count > 0 ? `${productRating.rating}/5 (${productRating.count})` : "Sin opiniones"}</span>
                     </div>
 
                     <p className="text-3xl font-light mb-2">

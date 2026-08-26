@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Cpu, Search, ShoppingCart, User, X } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -7,9 +7,53 @@ const Menu = ({ searchQuery, setSearchQuery }) => {
     const [mostrarCarrito, setMostrarCarrito] = useState(false);
     const [mostrarPerfil, setMostrarPerfil] = useState(false);
 
+    const menuRef = useRef(null);
+    const searchRef = useRef(null);
+    const navRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (navRef.current && !navRef.current.contains(event.target)) {
+                if (searchRef.current && !searchRef.current.contains(event.target)) {
+                    setMostrarCarrito(false);
+                    setMostrarPerfil(false);
+                    setMostrarBusqueda(false);
+                } else if (!searchRef.current) {
+                    setMostrarCarrito(false);
+                    setMostrarPerfil(false);
+                    setMostrarBusqueda(false);
+                }
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleEscape = (event) => {
+            if (event.key === "Escape") {
+                setMostrarBusqueda(false);
+                setMostrarCarrito(false);
+                setMostrarPerfil(false);
+                setSearchQuery("");
+            }
+        };
+
+        document.addEventListener("keydown", handleEscape);
+        return () => {
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, [setSearchQuery]);
+
     return (
         <header className="border-b border-neutral-100/50 bg-neutral-950/80 backdrop-blur-sm sticky top-0 z-[100]">
-            <nav className="mx-auto flex max-w-4xl items-center justify-between px-8 py-6 text-sm text-neutral-200">
+            <nav 
+                ref={navRef}
+                className="mx-auto flex max-w-4xl items-center justify-between px-8 py-6 text-sm text-neutral-200"
+            >
                 <Link
                     to="/"
                     className="text-2xl tracking-wider text-neutral-400 flex items-center gap-2"
@@ -18,10 +62,11 @@ const Menu = ({ searchQuery, setSearchQuery }) => {
                     TechZone
                 </Link>
 
-                <div className="flex gap-6 relative">
+                <div ref={menuRef} className="flex gap-6 relative">
                     <Search
                         className={`size-6 cursor-pointer transition-colors ${mostrarBusqueda ? 'text-[#fafafa]' : 'text-neutral-300 hover:text-[#fafafa]'}`}
-                        onClick={() => {
+                        onClick={(e) => {
+                            e.stopPropagation();
                             setMostrarBusqueda(!mostrarBusqueda);
                             setMostrarCarrito(false);
                             setMostrarPerfil(false);
@@ -30,7 +75,8 @@ const Menu = ({ searchQuery, setSearchQuery }) => {
                     />
                     <ShoppingCart
                         className={`size-6 cursor-pointer transition-colors ${mostrarCarrito ? 'text-[#fafafa]' : 'text-neutral-300 hover:text-[#fafafa]'}`}
-                        onClick={() => {
+                        onClick={(e) => {
+                            e.stopPropagation();
                             setMostrarCarrito(!mostrarCarrito);
                             setMostrarBusqueda(false);
                             setMostrarPerfil(false);
@@ -38,7 +84,8 @@ const Menu = ({ searchQuery, setSearchQuery }) => {
                     />
                     <User
                         className={`size-6 cursor-pointer transition-colors ${mostrarPerfil ? 'text-[#fafafa]' : 'text-neutral-300 hover:text-[#fafafa]'}`}
-                        onClick={() => {
+                        onClick={(e) => {
+                            e.stopPropagation();
                             setMostrarPerfil(!mostrarPerfil);
                             setMostrarBusqueda(false);
                             setMostrarCarrito(false);
@@ -46,7 +93,10 @@ const Menu = ({ searchQuery, setSearchQuery }) => {
                     />
 
                     {mostrarPerfil && (
-                        <div className="absolute right-0 top-10 w-48 bg-neutral-900 border border-neutral-800 rounded-md p-4 shadow-xl z-50 text-neutral-200">
+                        <div 
+                            className="absolute right-0 top-10 w-48 bg-neutral-900 border border-neutral-800 rounded-md p-4 shadow-xl z-50 text-neutral-200"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <h4 className="font-semibold text-xs text-neutral-400 mb-2 uppercase tracking-wider">Mi Cuenta</h4>
                             <hr className="border-neutral-800 mb-2" />
                             <div className="flex w-full flex-col">
@@ -57,7 +107,10 @@ const Menu = ({ searchQuery, setSearchQuery }) => {
                     )}
 
                     {mostrarCarrito && (
-                        <div className="absolute right-0 top-10 w-64 bg-neutral-900 border border-neutral-800 rounded-md p-4 shadow-xl z-50 text-neutral-200">
+                        <div 
+                            className="absolute right-0 top-10 w-64 bg-neutral-900 border border-neutral-800 rounded-md p-4 shadow-xl z-50 text-neutral-200"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <h4 className="font-semibold text-xs text-neutral-400 mb-2 uppercase tracking-wider">Tu Carrito</h4>
                             <hr className="border-neutral-800 mb-2" />
                             <p className="text-xs text-neutral-500 py-4 text-center">El carrito está vacío</p>
@@ -68,7 +121,11 @@ const Menu = ({ searchQuery, setSearchQuery }) => {
             </nav>
 
             {mostrarBusqueda && (
-                <div className="bg-neutral-900 border-t border-neutral-800/60 px-8 py-4">
+                <div 
+                    ref={searchRef}
+                    className="bg-neutral-900 border-t border-neutral-800/60 px-8 py-4"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <div className="mx-auto max-w-4xl flex items-center gap-3">
                         <Search className="size-5 text-neutral-500" />
                         <input
