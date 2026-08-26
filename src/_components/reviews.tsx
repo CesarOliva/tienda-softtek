@@ -94,15 +94,15 @@ export default function Reviews({ productId }: { productId: number }) {
                 <textarea value={content} onChange={(event) => setContent(event.target.value)} placeholder={"Escribe tu rese\u00f1a sobre este producto..."} className="w-full bg-neutral-900 text-white rounded-lg p-3 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-700 placeholder-neutral-500 resize-none border border-neutral-800" />
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex items-center gap-1.5">
-                        <span className="text-neutral-400 text-xs mr-1">{"Calificaci\u00f3n:"}</span>
+                        <span className="text-neutral-400 text-sm mr-1">Calificación:</span>
                         <div className="flex gap-0.5">
                             {[1, 2, 3, 4, 5].map((value) => (
                                 <button key={value} type="button" aria-label={`${value} estrellas`} onClick={() => setRating(value)} onMouseEnter={() => setHoverRating(value)} onMouseLeave={() => setHoverRating(0)} className="text-lg focus:outline-none transition-transform active:scale-95 cursor-pointer" style={{ color: value <= (hoverRating || rating) ? "#fbbf24" : "#404040" }}>{"\u2605"}</button>
                             ))}
                         </div>
                     </div>
-                    <button type="submit" disabled={isSubmitting} className="bg-white text-black text-xs font-medium uppercase tracking-wider py-2 px-4 rounded-md hover:bg-neutral-200 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-60">
-                        {isSubmitting ? "Publicando..." : "Publicar rese\u00f1a"}
+                    <button type="submit" disabled={isSubmitting} className="bg-white text-black text-sm font-medium uppercase tracking-wider py-2 px-4 rounded-md hover:bg-neutral-200 transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-60">
+                        {isSubmitting ? "Publicando..." : "Publicar reseña"}
                     </button>
                 </div>
                 {errorMessage && <p role="alert" className="text-xs text-red-400">{errorMessage}</p>}
@@ -110,9 +110,9 @@ export default function Reviews({ productId }: { productId: number }) {
 
             <div className="flex flex-col gap-4 mt-2">
                 {isLoading ? (
-                    <p className="text-neutral-500 font-light text-xs text-center py-6">{"Cargando rese\u00f1as..."}</p>
+                    <p className="text-neutral-500 font-light text-sm text-center py-6">Cargando reseñas...</p>
                 ) : reviews.length === 0 ? (
-                    <p className="text-neutral-500 font-light text-xs text-center py-6">{"No hay rese\u00f1as todav\u00eda. \u00a1S\u00e9 el primero en opinar!"}</p>
+                    <p className="text-neutral-500 font-light text-sm text-center py-6">No hay reseñas todavía. ¡Sé el primero en opinar!</p>
                 ) : reviews.map((review) => (
                     <article key={review.review_id} className="bg-neutral-900/20 p-4 rounded-xl border border-neutral-800/60 flex flex-col gap-1.5">
                         <span className="text-amber-400 text-xs tracking-wider" aria-label={`${review.calificacion} de 5 estrellas`}>{"\u2605".repeat(review.calificacion)}{"\u2606".repeat(5 - review.calificacion)}</span>

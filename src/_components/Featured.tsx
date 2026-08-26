@@ -4,6 +4,7 @@ import Card from "./GridCard";
 import { useEffect, useState } from "react";
 import type { Product } from "../../types/Product";
 import { supabase } from "../lib/supabaseClient";
+import { addProductImage } from "../lib/productImages";
 
 const Featured = () => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -13,14 +14,18 @@ const Featured = () => {
     }, [])
 
     async function getProducts(){
-        const { data, error } = await supabase.from('products').select();
+        const { data, error } = await supabase
+            .from('products')
+            .select("*, images (ruta)")
+            .order("product_id")
+            .limit(4);
 
         if(error) {
             console.error('Error fetching products:', error);
             return
         }
 
-        setProducts(data);
+        setProducts((data ?? []).map(addProductImage));
     }
 
     return (
@@ -34,10 +39,7 @@ const Featured = () => {
                 {products.slice(0, 4).map((product: Product) => (
                     <Card
                         key={product.product_id} 
-                        id={product.product_id}
-                        imagen={"product.imagen"}
-                        nombre={product.nombre}
-                        precio={product.precio}
+                        product={product}
                     />
                 ))}
             </div>
