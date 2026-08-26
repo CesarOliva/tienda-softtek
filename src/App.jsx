@@ -1,4 +1,5 @@
 import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
+import { CartProvider } from './context/CartContext';
 import Catalogo from './pages/Catalogo';
 import Producto from './pages/Producto';
 import Menu from './_components/Menu';
@@ -7,11 +8,13 @@ import Footer from './_components/Footer';
 import Main from './pages/Main';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import { CartProvider } from './context/CartContext';
+import Checkout from './pages/Checkout';
+import { Toaster } from 'sonner';
 
 function Layout() {
   return (
     <>
+      <Toaster position="bottom-center"/>
       <Menu />
       <ScrollToTop />
       <Outlet />
@@ -31,6 +34,7 @@ function App() {
             <Route path='/register' element={<Register />} />
             <Route path='/catalogo' element={<Catalogo />} />
             <Route path='/:productId' element={<Producto />} />
+            <Route path="/checkout" element={<Checkout />} />
           </Route>
         </Routes>
       </BrowserRouter>
