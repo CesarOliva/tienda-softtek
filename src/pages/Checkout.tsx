@@ -9,20 +9,69 @@ import { supabase } from "@/lib/supabaseClient";
 import { Product } from "@/types/Product";
 import { addProductImage } from "@/lib/productImages";
 import { toast } from "sonner";
+import { User } from "@supabase/supabase-js";
 
 const Checkout = () => {
     const navigate = useNavigate();
+    const [user, setUser] = useState<User | null>(null);
+    
     const { items, refreshStock } = useCart();
     const [showConfetti, setShowConfetti] = useState(false);
     const [isCheckingStock, setIsCheckingStock] = useState(true);
 
     const [product, setProduct] = useState<Product | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingUser, setIsLoadingUser] = useState(true);
+    
+    const [addresses, setAddresses] = useState<any[]>([]);
 
     const location = useLocation();
     const productstate = location.state;
     const directProductId = productstate?.product?.product_id ?? productstate?.id;
     const isDirectPurchase = typeof directProductId === "number";
+
+    const { clearCart } = useCart();
+
+    useEffect(() => {
+        const getUser = async () => {
+            const { data, error } = await supabase.auth.getUser();
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+            setIsLoadingUser(false);
+            setUser(data.user);
+        };
+
+        getUser();
+    }, []);
+
+    if (!user && !isLoadingUser) {
+        navigate("/");
+    }
+
+    useEffect(() => {
+        async function getAddresses() {
+            const { data, error } = await supabase
+                .from("addresses")
+                .select()
+                .eq("user_id", user?.id)
+
+            if (error) {
+                console.error("Error fetching addresses:", error);
+            }
+
+            if (!data) {
+                setAddresses([]);
+                return;
+            }
+
+            setAddresses(data);
+        }
+
+        getAddresses();
+    }, [user]);
 
     useEffect(() => {
         async function getProduct() {
@@ -109,6 +158,62 @@ const Checkout = () => {
         }).format(price);
     };
 
+    const transaction = async () => {
+        if (!user) {
+            toast.error("Usuario no autenticado");
+            return false;
+        }
+
+        //Add address
+        const { data: address, error: addressError } = await supabase
+            .from("addresses")
+            .insert({
+                calle: form.street,
+                colonia: form.colony,
+                cp: form.postalCode,
+                ciudad: form.city,
+                estado: form.state,
+                referencia: form.reference || null,
+                user_id: user?.id,
+            })
+            .select("address_id")
+            .single();
+
+        if (addressError) {
+            console.error("Error adding address:", addressError);
+            toast.error("Ocurrió un error. Intente nuevamente");
+            return;
+        }
+
+        //Create purchase
+        const { data: purchase, error: purchaseError } = await supabase
+            .from("purchases")
+            .insert({
+                user_id: user?.id,
+                recibe: form.name,
+                address_id: address.address_id,
+            })
+            .select("purchase_id")
+            .single();
+
+        if (purchaseError) {
+            console.error("Error creating purchase:", purchaseError);
+            toast.error("Ocurrió un error. Intente nuevamente");
+            return;
+        }
+
+        //add every product to purchase
+        const purchasedProducts = isDirectPurchase && product
+            ? [{ purchase_id: purchase.purchase_id, product_id: product.product_id, quantity: 1 }]
+            : items.map((item) => ({ purchase_id: purchase.purchase_id, product_id: item.product_id, cantidad: item.quantity }));
+
+        const { error: productsError } = await supabase
+            .from("purchased_products")
+            .insert(purchasedProducts);
+
+        return productsError ? false : true;
+    }
+
     const handleBuy = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -126,13 +231,18 @@ const Checkout = () => {
             return;
         }
 
-        setShowConfetti(true);
-        toast.success("Compra realizada con éxito.");
-        setTimeout(() => {
-            setShowConfetti(false);
-            navigate("/profile");
-        }, 5000);
+        const success = await transaction();
 
+        if (success){
+            clearCart();
+            setShowConfetti(true);
+            toast.success("Compra realizada con éxito.");
+            
+            setTimeout(() => {
+                setShowConfetti(false);
+                navigate("/profile");
+            }, 5000);
+        }
     };
 
     return (
@@ -165,53 +275,58 @@ const Checkout = () => {
                                 </div>
                             </div>
 
-                            <div className="space-y-5">
-                                <div className="w-full">
-                                    <Input label="Nombre completo" name="name" value={form.name} onChange={handleChange} placeholder="Nombre de quien recibe" required/>
-                                </div>
+                            {addresses.length > 0 ? (
+                                <>Direcciones guardadas</>
+                            ): (
+                                <div className="space-y-5">
+                                    <div className="w-full">
+                                        <Input label="Nombre completo" name="name" value={form.name} onChange={handleChange} placeholder="Nombre de quien recibe" required/>
+                                    </div>
 
-                                <Input label="Calle y número" name="street" value={form.street} onChange={handleChange} placeholder="Calle y número" required />
-
-                                <div>
-                                    <label htmlFor="reference" className="mb-2 block text-sm font-medium text-neutral-300">
-                                        Referencia <span className="ml-1 text-neutral-500">(opcional)</span>
-                                    </label>
-
-                                    <textarea
-                                        id="reference"
-                                        name="reference"
-                                        value={form.reference}
-                                        onChange={handleChange}
-                                        rows={3}
-                                        placeholder="Ej. Frente a la farmacia, casa color azul, etc."
-                                        className="w-full resize-none rounded-lg border border-neutral-700  bg-neutral-900 px-4 py-3 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:outline-none"
-                                    />
-                                </div>
-
-                                <div className="grid gap-5 sm:grid-cols-2">
-                                    <Input label="Colonia" name="colony" value={form.colony} onChange={handleChange} placeholder="Colonia" required/>
-                                    <Input label="Código postal" name="postalCode" value={form.postalCode} onChange={handleChange} placeholder="00000" maxLength={5} inputMode="numeric" required/>
-                                </div>
-
-                                <div className="grid gap-5 sm:grid-cols-2">
-                                    <Input label="Ciudad" name="city" value={form.city} onChange={handleChange} placeholder="Ciudad" required/>
+                                    <Input label="Calle y número" name="street" value={form.street} onChange={handleChange} placeholder="Calle y número" required />
 
                                     <div>
-                                        <label htmlFor="state" className="mb-2 block text-sm font-medium text-neutral-300" >Estado</label>
+                                        <label htmlFor="reference" className="mb-2 block text-sm font-medium text-neutral-300">
+                                            Referencia
+                                        </label>
 
-                                        <div className="relative">
-                                            <select id="state" name="state" value={form.state} onChange={handleChange} required className="w-full appearance-none rounded-lg border border-neutral-700  bg-neutral-900 px-4 py-3 text-sm text-white outline-none transition focus:outline-none">
-                                                <option value="" disabled>Estado</option>
-                                                {States.map((state) => (
-                                                    <option key={state} value={state}>{state}</option>
-                                                ))}
-                                            </select>
+                                        <textarea
+                                            id="reference"
+                                            name="reference"
+                                            value={form.reference}
+                                            onChange={handleChange}
+                                            rows={3}
+                                            placeholder="Ej. Frente a la farmacia, casa color azul, etc."
+                                            className="w-full resize-none rounded-lg border border-neutral-700  bg-neutral-900 px-4 py-3 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:outline-none"
+                                            required
+                                        />
+                                    </div>
 
-                                            <ChevronDown size={18} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500"/>
+                                    <div className="grid gap-5 sm:grid-cols-2">
+                                        <Input label="Colonia" name="colony" value={form.colony} onChange={handleChange} placeholder="Colonia" required/>
+                                        <Input label="Código postal" name="postalCode" value={form.postalCode} onChange={handleChange} placeholder="00000" maxLength={5} inputMode="numeric" required/>
+                                    </div>
+
+                                    <div className="grid gap-5 sm:grid-cols-2">
+                                        <Input label="Ciudad" name="city" value={form.city} onChange={handleChange} placeholder="Ciudad" required/>
+
+                                        <div>
+                                            <label htmlFor="state" className="mb-2 block text-sm font-medium text-neutral-300" >Estado</label>
+
+                                            <div className="relative">
+                                                <select id="state" name="state" value={form.state} onChange={handleChange} required className="w-full appearance-none rounded-lg border border-neutral-700  bg-neutral-900 px-4 py-3 text-sm text-white outline-none transition focus:outline-none">
+                                                    <option value="" disabled>Estado</option>
+                                                    {States.map((state) => (
+                                                        <option key={state} value={state}>{state}</option>
+                                                    ))}
+                                                </select>
+
+                                                <ChevronDown size={18} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500"/>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
                         </section>
                     </form>
 
@@ -287,7 +402,7 @@ const Checkout = () => {
                             <button
                                 onClick={handleBuy}
                                 disabled={isCheckingStock || hasUnavailableItems }
-                                className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-200 px-6 py-2 text-lg text-black hover:bg-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
+                                className="cursor-pointer mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-200 px-6 py-2 text-lg text-black hover:bg-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
                             >
                                 {isCheckingStock ? "Verificando stock" : hasUnavailableItems ? "Producto agotado" : "Pagar"}
                                 <ArrowRight size={18} />

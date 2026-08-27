@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { Cpu, Search as SearchIcon, ShoppingCart, User } from "lucide-react";
+import { Cpu, Search as SearchIcon, ShoppingCart, UserIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import ProductSearch from "./Search";
 import Cart from "./Cart";
 import { useCart } from "../context/useCart";
+import { User } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient";
 
 const Menu = () => {
+    const [user, setUser] = useState<User | null>(null);
     const [mostrarBusqueda, setMostrarBusqueda] = useState(false);
     const [mostrarCarrito, setMostrarCarrito] = useState(false);
     const navRef = useRef<HTMLElement | null>(null);
@@ -32,6 +35,21 @@ const Menu = () => {
 
         document.addEventListener("keydown", handleEscape);
         return () => document.removeEventListener("keydown", handleEscape);
+    }, []);
+    
+    useEffect(() => {
+        const getUser = async () => {
+            const { data, error } = await supabase.auth.getUser();
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            setUser(data.user);
+        };
+
+        getUser();
     }, []);
 
     return (
@@ -70,7 +88,7 @@ const Menu = () => {
                             }}
                             aria-label="Abrir perfil"
                         >
-                            <User className="size-6" />
+                            <UserIcon className="size-6" />
                         </Link>
 
                         {mostrarCarrito && (
@@ -109,7 +127,7 @@ const Menu = () => {
                     </button>
                     
                     <Link
-                        to={"/login"}
+                        to={user ? "/profile" : "/login"}
                         type="button"
                         className={`flex items-center gap-2 cursor-pointer transition-colors text-neutral-300 hover:text-[#fafafa]'}`}
                         onClick={() => {
@@ -118,8 +136,10 @@ const Menu = () => {
                         }}
                         aria-label="Abrir perfil"
                     >
-                        <User className="size-6" />
-                        <span>Iniciar sesión</span>
+                        <UserIcon className="size-6" />
+                        <span>
+                            {user ? "Perfil" : "Iniciar sesión"}
+                        </span>
                     </Link>
 
                     {mostrarCarrito && (
