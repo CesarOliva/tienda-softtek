@@ -1,12 +1,5 @@
 import { createContext } from "react";
-
-export type CartProduct = {
-    product_id: number;
-    nombre: string;
-    imagen?: string;
-    precio: number;
-    stock: number;
-};
+import type { CartProduct } from "../../types/CartProduct";
 
 export type CartItem = CartProduct & {
     quantity: number;
