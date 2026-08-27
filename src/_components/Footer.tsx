@@ -46,9 +46,21 @@ const Footer = () => {
       <div className="footer-bottom">
         <p>&copy; {new Date().getFullYear()} Tienda TechZone. Todos los derechos reservados.</p>
         <div className="payment-methods">
-          <span>💳 Visa</span>
-          <span>💳 Mastercard</span>
-          <span>💵 PayPal</span>
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Visa_Inc._logo_(2021%E2%80%93present).svg/3840px-Visa_Inc._logo_(2021%E2%80%93present).svg.png"
+            alt="Visa"
+            className="h-5 w-16 object-contain"
+          />
+          <img
+            src="https://www.svgrepo.com/show/362015/mastercard-3.svg"
+            alt="Mastercard"
+            className="relative -top-2 h-10 w-28 object-contain"
+          />
+          <img
+            src="https://vectorseek.com/wp-content/uploads/2023/08/Paypal-Symbol-Logo-Vector.svg-.png"
+            alt="PayPal"
+            className="h-5 w-16 object-contain"
+          />
         </div>
       </div>
     </footer>
