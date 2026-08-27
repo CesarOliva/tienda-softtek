@@ -36,7 +36,7 @@ const Menu = () => {
         document.addEventListener("keydown", handleEscape);
         return () => document.removeEventListener("keydown", handleEscape);
     }, []);
-    
+
     useEffect(() => {
         const getUser = async () => {
             const { data, error } = await supabase.auth.getUser();
@@ -77,7 +77,7 @@ const Menu = () => {
                             <ShoppingCart className={`size-6 cursor-pointer transition-colors ${mostrarCarrito ? 'text-[#fafafa]' : 'text-neutral-300 hover:text-[#fafafa]'}`} />
                             {cartCount > 0 && <span className="absolute -right-3 -top-3 flex size-5 items-center justify-center rounded-full bg-white text-[11px] font-bold text-black">{cartCount}</span>}
                         </button>
-                        
+
                         <Link
                             to={"/login"}
                             type="button"
@@ -92,7 +92,7 @@ const Menu = () => {
                         </Link>
 
                         {mostrarCarrito && (
-                            <Cart/>
+                            <Cart onCheckout={() => setMostrarCarrito(false)} />
                         )}
                     </div>
                 </div>
@@ -125,7 +125,7 @@ const Menu = () => {
                         <ShoppingCart className={`size-6 cursor-pointer transition-colors ${mostrarCarrito ? 'text-[#fafafa]' : 'text-neutral-300 hover:text-[#fafafa]'}`} />
                         {cartCount > 0 && <span className="absolute -right-3 -top-3 flex size-5 items-center justify-center rounded-full bg-white text-[11px] font-bold text-black">{cartCount}</span>}
                     </button>
-                    
+
                     <Link
                         to={user ? "/profile" : "/login"}
                         type="button"
@@ -143,7 +143,7 @@ const Menu = () => {
                     </Link>
 
                     {mostrarCarrito && (
-                        <Cart/>
+                        <Cart onCheckout={() => setMostrarCarrito(false)} />
                     )}
                 </div>
             </nav>

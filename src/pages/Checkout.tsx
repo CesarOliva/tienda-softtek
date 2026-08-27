@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ArrowRight, ChevronDown, Package, Truck } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown, Package, Truck } from "lucide-react";
 import { States } from "../types/States";
 import Input from "@/_components/Checkout/Input";
+import SavedAddresses, { type SavedAddress } from "@/_components/Checkout/SavedAddresses";
 import { useCart } from "@/context/useCart";
 import ReactConfetti from "react-confetti";
 import { supabase } from "@/lib/supabaseClient";
@@ -14,7 +15,7 @@ import { User } from "@supabase/supabase-js";
 const Checkout = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState<User | null>(null);
-    
+
     const { items, refreshStock } = useCart();
     const [showConfetti, setShowConfetti] = useState(false);
     const [isCheckingStock, setIsCheckingStock] = useState(true);
@@ -22,8 +23,10 @@ const Checkout = () => {
     const [product, setProduct] = useState<Product | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingUser, setIsLoadingUser] = useState(true);
-    
-    const [addresses, setAddresses] = useState<any[]>([]);
+
+    const [addresses, setAddresses] = useState<SavedAddress[]>([]);
+    const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+    const [isAddingAddress, setIsAddingAddress] = useState(false);
 
     const location = useLocation();
     const productstate = location.state;
@@ -68,6 +71,7 @@ const Checkout = () => {
             }
 
             setAddresses(data);
+            setSelectedAddressId(data[0]?.address_id ?? null);
         }
 
         getAddresses();
@@ -123,10 +127,24 @@ const Checkout = () => {
         state: "",
     });
 
+    useEffect(() => {
+        const displayName = user?.user_metadata?.display_name;
+
+        if (displayName) {
+            setForm((previousForm) => ({
+                ...previousForm,
+                name: previousForm.name || displayName,
+            }));
+        }
+    }, [user]);
+
     const validateForm = () => {
-        return Object.values(form).every(
-            (value) => value.trim() !== ""
-        );
+        const hasRecipient = form.name.trim() !== "";
+        const hasAddress = selectedAddressId !== null || Object.entries(form)
+            .filter(([key]) => key !== "name")
+            .every(([, value]) => value.trim() !== "");
+
+        return hasRecipient && hasAddress;
     };
 
     const cartTotal = items.reduce(
@@ -164,25 +182,30 @@ const Checkout = () => {
             return false;
         }
 
-        //Add address
-        const { data: address, error: addressError } = await supabase
-            .from("addresses")
-            .insert({
-                calle: form.street,
-                colonia: form.colony,
-                cp: form.postalCode,
-                ciudad: form.city,
-                estado: form.state,
-                referencia: form.reference || null,
-                user_id: user?.id,
-            })
-            .select("address_id")
-            .single();
+        let addressId = selectedAddressId;
 
-        if (addressError) {
-            console.error("Error adding address:", addressError);
-            toast.error("Ocurrió un error. Intente nuevamente");
-            return;
+        if (addressId === null) {
+            const { data: address, error: addressError } = await supabase
+                .from("addresses")
+                .insert({
+                    calle: form.street,
+                    colonia: form.colony,
+                    cp: form.postalCode,
+                    ciudad: form.city,
+                    estado: form.state,
+                    referencia: form.reference || null,
+                    user_id: user?.id,
+                })
+                .select("address_id")
+                .single();
+
+            if (addressError) {
+                console.error("Error adding address:", addressError);
+                toast.error("Ocurrió un error. Intente nuevamente");
+                return;
+            }
+
+            addressId = address.address_id;
         }
 
         //Create purchase
@@ -191,7 +214,7 @@ const Checkout = () => {
             .insert({
                 user_id: user?.id,
                 recibe: form.name,
-                address_id: address.address_id,
+                address_id: addressId,
             })
             .select("purchase_id")
             .single();
@@ -233,11 +256,11 @@ const Checkout = () => {
 
         const success = await transaction();
 
-        if (success){
+        if (success) {
             clearCart();
             setShowConfetti(true);
             toast.success("Compra realizada con éxito.");
-            
+
             setTimeout(() => {
                 setShowConfetti(false);
                 navigate("/profile");
@@ -246,10 +269,10 @@ const Checkout = () => {
     };
 
     return (
-        <main className="mx-auto flex md:min-h-screen max-w-5xl flex-col gap-8 px-8 md:justify-center mt-12 mb-8 md:mb-24">
+        <main className="mx-auto flex max-w-5xl flex-col gap-8 px-8 mt-12 mb-8 md:mb-16">
             {showConfetti && (
                 <ReactConfetti
-                    width={window.innerWidth-20}
+                    width={window.innerWidth - 20}
                     height={window.innerHeight}
                     recycle={false}
                     numberOfPieces={500}
@@ -275,58 +298,81 @@ const Checkout = () => {
                                 </div>
                             </div>
 
-                            {addresses.length > 0 ? (
-                                <>Direcciones guardadas</>
-                            ): (
-                                <div className="space-y-5">
-                                    <div className="w-full">
-                                        <Input label="Nombre completo" name="name" value={form.name} onChange={handleChange} placeholder="Nombre de quien recibe" required/>
-                                    </div>
-
-                                    <Input label="Calle y número" name="street" value={form.street} onChange={handleChange} placeholder="Calle y número" required />
-
-                                    <div>
-                                        <label htmlFor="reference" className="mb-2 block text-sm font-medium text-neutral-300">
-                                            Referencia
-                                        </label>
-
-                                        <textarea
-                                            id="reference"
-                                            name="reference"
-                                            value={form.reference}
-                                            onChange={handleChange}
-                                            rows={3}
-                                            placeholder="Ej. Frente a la farmacia, casa color azul, etc."
-                                            className="w-full resize-none rounded-lg border border-neutral-700  bg-neutral-900 px-4 py-3 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:outline-none"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="grid gap-5 sm:grid-cols-2">
-                                        <Input label="Colonia" name="colony" value={form.colony} onChange={handleChange} placeholder="Colonia" required/>
-                                        <Input label="Código postal" name="postalCode" value={form.postalCode} onChange={handleChange} placeholder="00000" maxLength={5} inputMode="numeric" required/>
-                                    </div>
-
-                                    <div className="grid gap-5 sm:grid-cols-2">
-                                        <Input label="Ciudad" name="city" value={form.city} onChange={handleChange} placeholder="Ciudad" required/>
+                            <div className="space-y-5">
+                                {addresses.length > 0 && !isAddingAddress ? (
+                                    <SavedAddresses
+                                        addresses={addresses}
+                                        selectedAddressId={selectedAddressId}
+                                        recipientName={form.name}
+                                        onSelect={setSelectedAddressId}
+                                        onAddNew={() => {
+                                            setSelectedAddressId(null);
+                                            setIsAddingAddress(true);
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="space-y-5">
+                                        {addresses.length > 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsAddingAddress(false);
+                                                    setSelectedAddressId(addresses[0].address_id);
+                                                }}
+                                                className="inline-flex items-center gap-2 rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm font-medium text-neutral-200 transition-colors hover:border-neutral-500 hover:bg-neutral-800 hover:text-white cursor-pointer"
+                                            >
+                                                <ArrowLeft className="size-4" />
+                                                Volver a direcciones guardadas
+                                            </button>
+                                        )}
+                                        <Input label="Nombre completo" name="name" value={form.name} onChange={handleChange} placeholder="Nombre de quien recibe" required />
+                                        <div className="w-full">
+                                            <Input label="Calle y número" name="street" value={form.street} onChange={handleChange} placeholder="Calle y número" required />
+                                        </div>
 
                                         <div>
-                                            <label htmlFor="state" className="mb-2 block text-sm font-medium text-neutral-300" >Estado</label>
+                                            <label htmlFor="reference" className="mb-2 block text-sm font-medium text-neutral-300">
+                                                Referencia
+                                            </label>
 
-                                            <div className="relative">
-                                                <select id="state" name="state" value={form.state} onChange={handleChange} required className="w-full appearance-none rounded-lg border border-neutral-700  bg-neutral-900 px-4 py-3 text-sm text-white outline-none transition focus:outline-none">
-                                                    <option value="" disabled>Estado</option>
-                                                    {States.map((state) => (
-                                                        <option key={state} value={state}>{state}</option>
-                                                    ))}
-                                                </select>
+                                            <textarea
+                                                id="reference"
+                                                name="reference"
+                                                value={form.reference}
+                                                onChange={handleChange}
+                                                rows={3}
+                                                placeholder="Ej. Frente a la farmacia, casa color azul, etc."
+                                                className="w-full resize-none rounded-lg border border-neutral-700  bg-neutral-900 px-4 py-3 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:outline-none"
+                                                required
+                                            />
+                                        </div>
 
-                                                <ChevronDown size={18} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500"/>
+                                        <div className="grid gap-5 sm:grid-cols-2">
+                                            <Input label="Colonia" name="colony" value={form.colony} onChange={handleChange} placeholder="Colonia" required />
+                                            <Input label="Código postal" name="postalCode" value={form.postalCode} onChange={handleChange} placeholder="00000" maxLength={5} inputMode="numeric" required />
+                                        </div>
+
+                                        <div className="grid gap-5 sm:grid-cols-2">
+                                            <Input label="Ciudad" name="city" value={form.city} onChange={handleChange} placeholder="Ciudad" required />
+
+                                            <div>
+                                                <label htmlFor="state" className="mb-2 block text-sm font-medium text-neutral-300" >Estado</label>
+
+                                                <div className="relative">
+                                                    <select id="state" name="state" value={form.state} onChange={handleChange} required className="w-full appearance-none rounded-lg border border-neutral-700  bg-neutral-900 px-4 py-3 text-sm text-white outline-none transition focus:outline-none">
+                                                        <option value="" disabled>Estado</option>
+                                                        {States.map((state) => (
+                                                            <option key={state} value={state}>{state}</option>
+                                                        ))}
+                                                    </select>
+
+                                                    <ChevronDown size={18} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500" />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </section>
                     </form>
 
@@ -343,56 +389,56 @@ const Checkout = () => {
                                 </div>
                             </div>
 
-                        {/* Products */}
-                        <div className="space-y-5">
-                            {isDirectPurchase && product ? (
-                                <Link
-                                    to={`/producto-${product.product_id}`}
-                                    key={product.product_id}
-                                    className="flex gap-4 border-b border-neutral-800 pb-5"
-                                >
-                                    <img src={product.imagen || ""} alt={product.nombre} className="h-20 w-20 rounded-lg object-cover" />
+                            {/* Products */}
+                            <div className="space-y-5">
+                                {isDirectPurchase && product ? (
+                                    <Link
+                                        to={`/producto-${product.product_id}`}
+                                        key={product.product_id}
+                                        className="flex gap-4 border-b border-neutral-800 pb-5"
+                                    >
+                                        <img src={product.imagen || ""} alt={product.nombre} className="h-20 w-20 rounded-lg object-cover" />
 
-                                    <div className="min-w-0 flex-1">
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div>
-                                                <h3 className="text-sm font-semibold leading-5">{product.nombre}</h3>
-                                                <p className="mt-2 text-xs text-neutral-500">Cantidad: 1</p>
-                                            </div>
-
-                                            <span className="shrink-0 text-sm font-semibold">{formatPrice(product.precio)}</span>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ) : isDirectPurchase ? (
-                                <p className="text-sm text-neutral-400">
-                                    {isLoading ? "Cargando producto..." : "El producto ya no está disponible."}
-                                </p>
-                            ) : (
-                                <>
-                                    {items.map((item) => (
-                                        <Link
-                                            to={`/producto-${item.product_id}`}
-                                            key={item.product_id}
-                                            className="flex gap-4 border-b border-neutral-800 pb-5"
-                                        >
-                                            <img src={item.imagen || ""} alt={item.nombre} className="h-20 w-20 rounded-lg object-cover" />
-
-                                            <div className="min-w-0 flex-1">
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <div>
-                                                        <h3 className="text-sm font-semibold leading-5">{item.nombre}</h3>
-                                                        <p className="mt-2 text-xs text-neutral-500">Cantidad: {item.quantity}</p>
-                                                    </div>
-
-                                                    <span className="shrink-0 text-sm font-semibold">{formatPrice(item.precio)}</span>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <h3 className="text-sm font-semibold leading-5">{product.nombre}</h3>
+                                                    <p className="mt-2 text-xs text-neutral-500">Cantidad: 1</p>
                                                 </div>
+
+                                                <span className="shrink-0 text-sm font-semibold">{formatPrice(product.precio)}</span>
                                             </div>
-                                        </Link>
-                                    ))}
-                                </>
-                            )}
-                        </div>
+                                        </div>
+                                    </Link>
+                                ) : isDirectPurchase ? (
+                                    <p className="text-sm text-neutral-400">
+                                        {isLoading ? "Cargando producto..." : "El producto ya no está disponible."}
+                                    </p>
+                                ) : (
+                                    <>
+                                        {items.map((item) => (
+                                            <Link
+                                                to={`/producto-${item.product_id}`}
+                                                key={item.product_id}
+                                                className="flex gap-4 border-b border-neutral-800 pb-5"
+                                            >
+                                                <img src={item.imagen || ""} alt={item.nombre} className="h-20 w-20 rounded-lg object-cover" />
+
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <div>
+                                                            <h3 className="text-sm font-semibold leading-5">{item.nombre}</h3>
+                                                            <p className="mt-2 text-xs text-neutral-500">Cantidad: {item.quantity}</p>
+                                                        </div>
+
+                                                        <span className="shrink-0 text-sm font-semibold">{formatPrice(item.precio)}</span>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </>
+                                )}
+                            </div>
 
                             <div className="flex items-center justify-between pt-5">
                                 <span className="text-lg font-semibold">Total</span>
@@ -401,7 +447,7 @@ const Checkout = () => {
 
                             <button
                                 onClick={handleBuy}
-                                disabled={isCheckingStock || hasUnavailableItems }
+                                disabled={isCheckingStock || hasUnavailableItems}
                                 className="cursor-pointer mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-200 px-6 py-2 text-lg text-black hover:bg-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
                             >
                                 {isCheckingStock ? "Verificando stock" : hasUnavailableItems ? "Producto agotado" : "Pagar"}

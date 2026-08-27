@@ -3,7 +3,11 @@ import { useCart } from "../context/useCart";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-const Cart = () => {
+type CartProps = {
+    onCheckout?: () => void;
+};
+
+const Cart = ({ onCheckout }: CartProps) => {
     const { items, addItem, removeItem, clearCart, refreshStock, cartTotal } = useCart();
     const [isCheckingStock, setIsCheckingStock] = useState(true);
 
@@ -13,7 +17,7 @@ const Cart = () => {
 
     const hasUnavailableItems = items.some((item) => item.stock <= 0 || item.quantity > item.stock);
 
-    return ( 
+    return (
         <div className="absolute right-0 top-10 z-50 w-80 rounded-md border border-neutral-800 bg-neutral-900 p-4 text-neutral-200 shadow-xl">
             <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">Tu carrito</h4>
             <hr className="mb-2 border-neutral-800" />
@@ -66,6 +70,7 @@ const Cart = () => {
                         ) : (
                             <Link
                                 to="/checkout"
+                                onClick={onCheckout}
                                 className="flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-200 px-6 py-2 text-sm text-black hover:bg-neutral-300 md:w-1/2"
                             >
                                 Pagar
@@ -75,7 +80,7 @@ const Cart = () => {
                 </>
             )}
         </div>
-     );
+    );
 }
- 
+
 export default Cart;
