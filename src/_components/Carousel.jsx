@@ -1,37 +1,40 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import "./Carousel.css";
-
-const products = [
-  {
-    product_id: 8,
-    //imagen: "https://m.media-amazon.com/images/I/61QY3V6A-NL.jpg",
-    nombre: "Mouse Gamer RGB 7200 DPI",
-    descripcion: "Mouse gamer con iluminacion RGB y alta precision",
-  },
-  {
-    product_id: 13,
-    //imagen: "https://m.media-amazon.com/images/I/71BFvz7N32L._AC_.jpg",
-    nombre: "Teclado Mecanico RGB",
-    descripcion: "Teclado mecanico con retroiluminacion RGB",
-  },
-  {
-    product_id: 18,
-    //imagen: "https://i.etsystatic.com/31350528/r/il/016838/5582580533/il_794xN.5582580533_483u.jpg",
-    nombre: "Memoria USB 64GB",
-    descripcion: "Memoria USB 3.0 de 64GB",
-  },
-];
+import "./styles/Carousel.css";
+import { supabase } from "../lib/supabaseClient";
+import { addProductImage } from "../lib/productImages";
 
 export default function Carousel() {
+  const [products, setProducts] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
+    async function getProducts() {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*, images (ruta)")
+        .order("product_id")
+        .limit(3);
+
+      if (error) {
+        console.error("Error fetching carousel products:", error);
+        return;
+      }
+
+      setProducts((data ?? []).map(addProductImage));
+    }
+
+    getProducts();
+  }, []);
+
+  useEffect(() => {
+    if (products.length === 0) return;
+
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % products.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [products.length]);
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % products.length);
@@ -41,6 +44,8 @@ export default function Carousel() {
     setCurrentIndex((prev) => (prev - 1 + products.length) % products.length);
   };
 
+  if (products.length === 0) return null;
+
   return (
     <div className="carousel">
       <button className="prev" onClick={prevSlide} aria-label="Imagen anterior">&#10094;</button>
@@ -49,7 +54,7 @@ export default function Carousel() {
         className="carousel-slide"
       >
         <div className="carousel-copy">
-          <span>TIENDA</span>
+          <span>TechZone</span>
           <h1>{products[currentIndex].nombre}</h1>
           <p>{products[currentIndex].descripcion}</p>
         </div>
