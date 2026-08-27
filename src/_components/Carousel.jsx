@@ -2,7 +2,27 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./styles/Carousel.css";
 import { supabase } from "../lib/supabaseClient";
-import { addProductImage } from "../lib/productImages";
+
+const carouselSlides = [
+  {
+    src: "/images/carousel/producto-1.png",
+    eyebrow: "TechZone",
+    title: "-20% de descuento",
+    description: "Cargadores",
+  },
+  {
+    src: "/images/carousel/producto-2.png",
+    eyebrow: "TechZone",
+    title: "Producto destacado 2",
+    description: "Tecnologia pensada para acompanarte todos los dias.",
+  },
+  {
+    src: "/images/carousel/producto-3.png",
+    eyebrow: "TechZone",
+    title: "Producto destacado 3",
+    description: "Encuentra el equipo ideal para tus necesidades.",
+  },
+];
 
 export default function Carousel() {
   const [products, setProducts] = useState([]);
@@ -12,7 +32,7 @@ export default function Carousel() {
     async function getProducts() {
       const { data, error } = await supabase
         .from("products")
-        .select("*, images (ruta)")
+        .select("*")
         .order("product_id")
         .limit(3);
 
@@ -21,7 +41,7 @@ export default function Carousel() {
         return;
       }
 
-      setProducts((data ?? []).map(addProductImage));
+      setProducts(data ?? []);
     }
 
     getProducts();
@@ -46,6 +66,8 @@ export default function Carousel() {
 
   if (products.length === 0) return null;
 
+  const currentSlide = carouselSlides[currentIndex % carouselSlides.length];
+
   return (
     <div className="carousel">
       <button className="prev" onClick={prevSlide} aria-label="Imagen anterior">&#10094;</button>
@@ -54,11 +76,11 @@ export default function Carousel() {
         className="carousel-slide"
       >
         <div className="carousel-copy">
-          <span>TechZone</span>
-          <h1>{products[currentIndex].nombre}</h1>
-          <p>{products[currentIndex].descripcion}</p>
+          <span>{currentSlide.eyebrow}</span>
+          <h1>{currentSlide.title}</h1>
+          <p>{currentSlide.description}</p>
         </div>
-        <img src={products[currentIndex].imagen} alt={products[currentIndex].nombre} />
+        <img src={currentSlide.src} alt={currentSlide.title} />
       </Link>
       <button className="next" onClick={nextSlide} aria-label="Siguiente imagen">&#10095;</button>
 

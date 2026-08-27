@@ -3,7 +3,7 @@ import { useCart } from "../context/useCart";
 import { Link } from "react-router-dom";
 
 const Cart = () => {
-    const { items, addItem, removeItem, cartTotal } = useCart();
+    const { items, addItem, removeItem, clearCart, cartTotal } = useCart();
 
     return ( 
         <div className="absolute right-0 top-10 z-50 w-80 rounded-md border border-neutral-800 bg-neutral-900 p-4 text-neutral-200 shadow-xl">
@@ -38,7 +38,7 @@ const Cart = () => {
                     <div className="flex flex-col md:flex-row w-full items-center gap-2">
                         <button
                             type="button"
-                            onClick={()=>{}}
+                            onClick={clearCart}
                             className="w-full md:w-1/2 disabled:cursor-not-allowed cursor-pointer text-sm gap-2 bg-neutral-800 hover:bg-neutral-700 py-2 px-6 rounded-lg"
                         >
                             Vaciar carrito
