@@ -7,7 +7,7 @@
   overflow: hidden;
   border: 1px solid #292929;
   border-radius: 18px;
-  background: #171717;
+  background: #b7b7b7;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
 }
 
@@ -22,22 +22,28 @@
 .carousel-slide::after {
   position: absolute;
   inset: 0;
-  z-index: -1;
-  background: linear-gradient(90deg, #111 0%, rgba(17, 17, 17, 0.84) 38%, rgba(17, 17, 17, 0.08) 100%);
+  z-index: 2;
+  background: linear-gradient(90deg, #111 0%, rgba(17, 17, 17, 0.30) 38%, rgba(17, 17, 17, 0.08) 100%);
+  pointer-events: none;
   content: "";
 }
 
 .carousel-slide img {
   position: absolute;
-  right: 7%;
-  z-index: -2;
-  width: 43%;
-  height: 90%;
+  right: 4%;
+  z-index: 1;
+  width: 53%;
+  height: 94%;
+  border-radius: 14px;
   object-fit: contain;
-  filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.5));
+  object-position: center;
+  filter: brightness(0.92) saturate(0.95) contrast(1) drop-shadow(0 18px 18px rgba(0, 0, 0, 0.48));
+  opacity: 0.94;
 }
 
 .carousel-copy {
+  position: relative;
+  z-index: 3;
   max-width: 48%;
   padding: 0 0 8px 9%;
 }
@@ -126,7 +132,8 @@
   }
 
   .carousel-slide img {
-    right: -8%;
-    width: 52%;
+    right: -7%;
+    width: 58%;
+    height: 82%;
   }
 }

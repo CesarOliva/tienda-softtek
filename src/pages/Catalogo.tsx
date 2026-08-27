@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import ProductCard from "../_components/ProductCard";
 import { supabase } from "../lib/supabaseClient";
 import { addProductImage } from "../lib/productImages";
@@ -9,11 +10,34 @@ const Catalogo = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+    const [searchParams] = useSearchParams();
 
     useEffect(() => {
         getProducts();
         getCategories();
     }, []);
+
+    useEffect(() => {
+        const categorySlug = searchParams.get("categoria");
+        if (!categorySlug || categories.length === 0) return;
+
+        const normalize = (value: string) =>
+            value
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase();
+        const normalizedSlug = normalize(categorySlug);
+        const category = categories.find((item) => {
+            const categoryName = normalize(item.nombre);
+            return (
+                categoryName === normalizedSlug ||
+                categoryName.includes(normalizedSlug) ||
+                normalizedSlug.includes(categoryName)
+            );
+        });
+
+        setSelectedCategory(category?.category_id ?? null);
+    }, [categories, searchParams]);
 
     async function getProducts() {
         const { data, error } = await supabase
