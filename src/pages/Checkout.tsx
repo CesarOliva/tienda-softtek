@@ -5,25 +5,67 @@ import { States } from "../types/States";
 import Input from "@/_components/Checkout/Input";
 import { useCart } from "@/context/useCart";
 import ReactConfetti from "react-confetti";
+import { supabase } from "@/lib/supabaseClient";
+import { Product } from "@/types/Product";
+import { addProductImage } from "@/lib/productImages";
+import { toast } from "sonner";
 
 const Checkout = () => {
+    const navigate = useNavigate();
     const { items, refreshStock } = useCart();
     const [showConfetti, setShowConfetti] = useState(false);
     const [isCheckingStock, setIsCheckingStock] = useState(true);
-    const [isDirectPurchase, setIsDirectPurchase] = useState(false);
+
+    const [product, setProduct] = useState<Product | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     const location = useLocation();
-    const product = location.state;
+    const productstate = location.state;
+    const directProductId = productstate?.product?.product_id ?? productstate?.id;
+    const isDirectPurchase = typeof directProductId === "number";
 
     useEffect(() => {
-        if(product){
-            setIsDirectPurchase(true);
+        async function getProduct() {
+            if (!isDirectPurchase) {
+                setIsLoading(false);
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from("products")
+                .select()
+                .eq("product_id", directProductId)
+                .maybeSingle();
+
+            if (error) {
+                console.error("Error fetching product:", error);
+            }
+
+            if (!data) {
+                setProduct(null);
+                setIsLoading(false);
+                return;
+            }
+
+            const { data: images, error: imagesError } = await supabase
+                .from("images")
+                .select("ruta")
+                .eq("product_id", directProductId)
+                .limit(1);
+
+            if (imagesError) {
+                console.error("Error fetching product images:", imagesError);
+            }
+
+            setProduct(addProductImage({ ...data, images: images ?? [] }));
+            setIsLoading(false);
         }
-    }, [product]);
+
+        getProduct();
+    }, [directProductId, isDirectPurchase]);
 
     const [form, setForm] = useState({
         name: "",
-        phone: "",
         street: "",
         reference: "",
         colony: "",
@@ -32,10 +74,17 @@ const Checkout = () => {
         state: "",
     });
 
-    const total = items.reduce(
+    const validateForm = () => {
+        return Object.values(form).every(
+            (value) => value.trim() !== ""
+        );
+    };
+
+    const cartTotal = items.reduce(
         (total, item) => total + item.precio * item.quantity,
         0
     );
+    const total = isDirectPurchase && product ? product.precio : cartTotal;
     const hasUnavailableItems = items.some((item) => item.stock <= 0 || item.quantity > item.stock);
 
     useEffect(() => {
@@ -68,18 +117,26 @@ const Checkout = () => {
         setIsCheckingStock(false);
 
         if (!stockIsAvailable || hasUnavailableItems) {
+            toast.error("Algunos productos no están disponibles.");
+            return;
+        }
+
+        if (!validateForm()) {
+            toast.error("Completa todos los campos del formulario.");
             return;
         }
 
         setShowConfetti(true);
-
+        toast.success("Compra realizada con éxito.");
         setTimeout(() => {
             setShowConfetti(false);
+            navigate("/profile");
         }, 5000);
+
     };
 
     return (
-        <main className="mx-auto flex md:min-h-screen max-w-6xl flex-col gap-8 px-8 md:justify-center mt-12 mb-8 md:mb-24">
+        <main className="mx-auto flex md:min-h-screen max-w-5xl flex-col gap-8 px-8 md:justify-center mt-12 mb-8 md:mb-24">
             {showConfetti && (
                 <ReactConfetti
                     width={window.innerWidth-20}
@@ -94,7 +151,7 @@ const Checkout = () => {
                     <span className="text-md mt-2 text-neutral-300">Realiza tu compra</span>
                 </header>
 
-                <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
+                <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_350px]">
                     <form>
                         <section className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5 sm:p-7">
                             <div className="mb-7 flex items-center gap-4">
@@ -173,8 +230,29 @@ const Checkout = () => {
 
                         {/* Products */}
                         <div className="space-y-5">
-                            {isDirectPurchase ? (
-                                <>Compra directa</>
+                            {isDirectPurchase && product ? (
+                                <Link
+                                    to={`/producto-${product.product_id}`}
+                                    key={product.product_id}
+                                    className="flex gap-4 border-b border-neutral-800 pb-5"
+                                >
+                                    <img src={product.imagen || ""} alt={product.nombre} className="h-20 w-20 rounded-lg object-cover" />
+
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h3 className="text-sm font-semibold leading-5">{product.nombre}</h3>
+                                                <p className="mt-2 text-xs text-neutral-500">Cantidad: 1</p>
+                                            </div>
+
+                                            <span className="shrink-0 text-sm font-semibold">{formatPrice(product.precio)}</span>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ) : isDirectPurchase ? (
+                                <p className="text-sm text-neutral-400">
+                                    {isLoading ? "Cargando producto..." : "El producto ya no está disponible."}
+                                </p>
                             ) : (
                                 <>
                                     {items.map((item) => (
@@ -208,7 +286,7 @@ const Checkout = () => {
 
                             <button
                                 onClick={handleBuy}
-                                disabled={isCheckingStock || hasUnavailableItems}
+                                disabled={isCheckingStock || hasUnavailableItems }
                                 className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-200 px-6 py-2 text-lg text-black hover:bg-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
                             >
                                 {isCheckingStock ? "Verificando stock" : hasUnavailableItems ? "Producto agotado" : "Pagar"}

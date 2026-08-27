@@ -3,8 +3,9 @@ import './styles/ProductList.css'
 import { RatingStars, useProductRating } from "../lib/reviews";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/useCart";
+import { Product } from '@/types/Product';
 
-function ProductCard({ product }) {
+function ProductCard({ product } : {product: Product}) {
     const productRating = useProductRating(product.product_id);
     const { addItem } = useCart();
 
@@ -12,7 +13,7 @@ function ProductCard({ product }) {
         <Link to={`/producto-${product.product_id}`} className="ProductCard">
             <div className="ProductImageContainer">
                 <img
-                    src={product.imagen}
+                    src={product.imagen || ""}
                     alt={product.nombre}
                     className="ProductImage"
                 />
