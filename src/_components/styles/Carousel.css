@@ -30,15 +30,15 @@
 
 .carousel-slide img {
   position: absolute;
-  right: 8%;
+  right: 4%;
   z-index: 1;
-  width: 47%;
-  height: 86%;
+  width: 53%;
+  height: 94%;
   border-radius: 14px;
   object-fit: contain;
   object-position: center;
-  filter: brightness(0.72) saturate(0.72) contrast(0.9) blur(0.25px) drop-shadow(0 18px 18px rgba(0, 0, 0, 0.48));
-  opacity: 0.78;
+  filter: brightness(0.92) saturate(0.95) contrast(1) drop-shadow(0 18px 18px rgba(0, 0, 0, 0.48));
+  opacity: 0.94;
 }
 
 .carousel-copy {
@@ -132,8 +132,8 @@
   }
 
   .carousel-slide img {
-    right: -2%;
-    width: 52%;
-    height: 76%;
+    right: -7%;
+    width: 58%;
+    height: 82%;
   }
 }

@@ -6,21 +6,24 @@ import { supabase } from "../lib/supabaseClient";
 const carouselSlides = [
   {
     src: "/images/carousel/producto-1.png",
+    category: "cargadores",
     eyebrow: "TechZone",
-    title: "-20% de descuento",
-    description: "Cargadores",
+    title: "20% de descuento",
+    description: "Cargadores y otros accesorios.",
   },
   {
     src: "/images/carousel/producto-2.png",
+    category: "teclados",
     eyebrow: "TechZone",
-    title: "Producto destacado 2",
-    description: "Tecnologia pensada para acompanarte todos los dias.",
+    title: "LLega a tu máximo nivel",
+    description: "Encuentra tu teclado ideal.",
   },
   {
     src: "/images/carousel/producto-3.png",
+    category: "mouse",
     eyebrow: "TechZone",
-    title: "Producto destacado 3",
-    description: "Encuentra el equipo ideal para tus necesidades.",
+    title: "Descrubre tu estilo",
+    description: "Los mejores mouses para Ti.",
   },
 ];
 
@@ -72,7 +75,7 @@ export default function Carousel() {
     <div className="carousel">
       <button className="prev" onClick={prevSlide} aria-label="Imagen anterior">&#10094;</button>
       <Link
-        to={`/producto-${products[currentIndex].product_id}`}
+        to={`/catalogo?categoria=${currentSlide.category}`}
         className="carousel-slide"
       >
         <div className="carousel-copy">
