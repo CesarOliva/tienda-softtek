@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { RatingStars, useProductRating } from "../lib/reviews";
-import { Product } from "../../types/Product";
+import { Product } from "../types/Product";
 import { useCart } from "@/context/useCart";
 import { ShoppingCart } from "lucide-react";
 
@@ -28,7 +28,7 @@ const Card = (
                             event.stopPropagation();
                             addItem({ product_id: product.product_id, nombre: product.nombre, imagen: product.imagen ?? "", precio: product.precio, stock: product.stock });
                         }}
-                        className="mt-3 flex items-center gap-2 rounded-lg bg-neutral-200 px-3 py-2 text-sm text-black hover:bg-neutral-300"
+                        className="cursor-pointer mt-3 flex items-center gap-2 rounded-lg bg-neutral-200 px-3 py-2 text-sm text-black hover:bg-neutral-300"
                     >
                         <ShoppingCart className="size-4" />
                         Agregar

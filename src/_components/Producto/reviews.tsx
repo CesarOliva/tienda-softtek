@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../../lib/supabaseClient";
 import { Review } from "../../types/Review";
 
 export default function Reviews({ productId }: { productId: number }) {

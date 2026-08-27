@@ -8,10 +8,10 @@ import {
     CommandInput,
     CommandItem,
     CommandList,
-} from "@/components/ui/command";
+} from "@/_components/ui/command";
 import { supabase } from "@/lib/supabaseClient";
 import { addProductImage } from "@/lib/productImages";
-import type { Product } from "../../types/Product";
+import type { Product } from "../types/Product";
 
 type SearchProps = {
     open: boolean;

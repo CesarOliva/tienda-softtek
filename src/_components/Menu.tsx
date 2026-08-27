@@ -9,12 +9,12 @@ const Menu = () => {
     const [mostrarBusqueda, setMostrarBusqueda] = useState(false);
     const [mostrarCarrito, setMostrarCarrito] = useState(false);
     const [mostrarPerfil, setMostrarPerfil] = useState(false);
-    const navRef = useRef(null);
+    const navRef = useRef<HTMLElement | null>(null);
     const { cartCount } = useCart();
 
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (navRef.current && !navRef.current.contains(event.target)) {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (navRef.current && !navRef.current.contains(event.target as Node)) {
                 setMostrarCarrito(false);
                 setMostrarPerfil(false);
             }
@@ -25,7 +25,7 @@ const Menu = () => {
     }, []);
 
     useEffect(() => {
-        const handleEscape = (event) => {
+        const handleEscape = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
                 setMostrarBusqueda(false);
                 setMostrarCarrito(false);
@@ -38,7 +38,7 @@ const Menu = () => {
     }, []);
 
     return (
-        <header className="sticky top-0 z-[100] border-b border-neutral-100/50 bg-neutral-950/80 backdrop-blur-sm">
+        <header className="sticky top-0 z-100 border-b border-neutral-100/50 bg-neutral-950/80 backdrop-blur-sm">
             <nav
                 ref={navRef}
                 className="mx-auto flex max-w-4xl items-center justify-between px-8 py-6 text-sm text-neutral-200"
@@ -95,6 +95,7 @@ const Menu = () => {
                             <div className="flex w-full flex-col">
                                 <Link to="/login" className="w-full py-1 text-left text-sm transition-colors hover:text-white">Iniciar sesión</Link>
                                 <Link to="/register" className="w-full py-1 text-left text-sm transition-colors hover:text-white">Registrarse</Link>
+                                <Link to="/profile" className="w-full py-1 text-left text-sm transition-colors hover:text-white">Mi perfil</Link>
                             </div>
                         </div>
                     )}

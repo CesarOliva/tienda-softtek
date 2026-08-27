@@ -44,13 +44,14 @@ const Cart = () => {
                             Vaciar carrito
                         </button>
 
-                        <button
+                        <Link
+                            to="/checkout"
                             type="button"
                             onClick={() => {}}
                             className="flex items-center w-full md:w-1/2 cursor-pointer text-sm gap-2 bg-neutral-200 hover:bg-neutral-300 py-2 px-6 rounded-lg text-black justify-center"
                         >
                             Pagar
-                        </button>
+                        </Link>
                     </div>
                 </>
             )}

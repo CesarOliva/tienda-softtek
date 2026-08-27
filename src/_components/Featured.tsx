@@ -2,7 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import Card from "./GridCard";
 import { useEffect, useState } from "react";
-import type { Product } from "../../types/Product";
+import type { Product } from "../types/Product";
 import { supabase } from "../lib/supabaseClient";
 import { addProductImage } from "../lib/productImages";
 

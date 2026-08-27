@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import "./styles/Carousel.css";
-import { supabase } from "../lib/supabaseClient";
-import { addProductImage } from "../lib/productImages";
+import "../styles/Carousel.css";
+import { supabase } from "../../lib/supabaseClient";
+import { addProductImage } from "../../lib/productImages";
 
 export default function Carousel() {
   const [products, setProducts] = useState([]);

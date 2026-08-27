@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import type { CartProduct } from "../../types/CartProduct";
+import type { CartProduct } from "../types/CartProduct";
 
 export type CartItem = CartProduct & {
     quantity: number;

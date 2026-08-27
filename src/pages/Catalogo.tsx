@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import ProductCard from "../_components/ProductCard";
 import { supabase } from "../lib/supabaseClient";
 import { addProductImage } from "../lib/productImages";
-import type { Product } from "../../types/Product";
-import type { Category } from "../../types/Category";
+import type { Product } from "../types/Product";
+import type { Category } from "../types/Category";
 
 const Catalogo = () => {
     const [products, setProducts] = useState<Product[]>([]);

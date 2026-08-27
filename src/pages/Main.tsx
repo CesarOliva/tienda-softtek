@@ -1,6 +1,6 @@
-import Carousel from "../_components/Carousel";
+import Carousel from "../_components/Main/Carousel";
 import Featured from "../_components/Featured";
-import Communication from "../_components/Communication";
+import Communication from "../_components/Main/Communication";
 
 const Main = () => {
     return (

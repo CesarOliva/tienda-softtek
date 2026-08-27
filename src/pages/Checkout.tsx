@@ -1,8 +1,11 @@
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { ArrowRight, ChevronDown, Package, Truck } from "lucide-react";
-import { States } from "../../types/States";
-import Input from "@/_components/Input";
-import { Product } from "types/Product";
+import { States } from "../types/States";
+import Input from "@/_components/Checkout/Input";
+import { Product } from "@/types/Product";
+import { useCart } from "@/context/useCart";
+import ReactConfetti from "react-confetti";
 
 const products: Product[] = [
     {
@@ -26,6 +29,9 @@ const products: Product[] = [
 ];
 
 const Checkout = () => {
+    const { items } = useCart();
+    const [showConfetti, setShowConfetti] = useState(false);
+
     const [form, setForm] = useState({
         name: "",
         phone: "",
@@ -37,8 +43,8 @@ const Checkout = () => {
         state: "",
     });
 
-    const total = products.reduce(
-        (total, product) => total + product.precio * product.stock,
+    const total = items.reduce(
+        (total, item) => total + item.precio * item.quantity,
         0
     );
 
@@ -60,16 +66,26 @@ const Checkout = () => {
         }).format(price);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleBuy = (e: React.FormEvent) => {
         e.preventDefault();
 
-        console.log("Datos de envío:", form);
+        setShowConfetti(true);
 
-        // Aquí puedes redirigir al flujo de pago
+        setTimeout(() => {
+            setShowConfetti(false);
+        }, 5000);
     };
 
     return (
         <main className="mx-auto flex md:min-h-screen max-w-6xl flex-col gap-8 px-8 md:justify-center mt-12 md:mb-24">
+            {showConfetti && (
+                <ReactConfetti
+                    width={window.innerWidth-20}
+                    height={window.innerHeight}
+                    recycle={false}
+                    numberOfPieces={500}
+                />
+            )}
             <div className="mx-auto w-full">
                 <header className="mb-8">
                     <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Checkout</h1>
@@ -77,7 +93,7 @@ const Checkout = () => {
                 </header>
 
                 <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
-                    <form onSubmit={handleSubmit}>
+                    <form>
                         <section className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5 sm:p-7">
                             <div className="mb-7 flex items-center gap-4">
                                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-900">
@@ -149,30 +165,31 @@ const Checkout = () => {
 
                                 <div>
                                     <h2 className="font-semibold">Resumen de tu pedido</h2>
-                                    <p className="mt-1 text-sm text-neutral-400">{products.length} productos</p>
+                                    <p className="mt-1 text-sm text-neutral-400">{items.length} productos</p>
                                 </div>
                             </div>
 
                         {/* Products */}
                         <div className="space-y-5">
-                            {products.map((product) => (
-                                <div
-                                    key={product.product_id}
+                            {items.map((item) => (
+                                <Link
+                                    to={`/producto-${item.product_id}`}
+                                    key={item.product_id}
                                     className="flex gap-4 border-b border-neutral-800 pb-5"
                                 >
-                                    <img src={product.imagen || ""} alt={product.nombre} className="h-20 w-20 rounded-lg object-cover" />
+                                    <img src={item.imagen || ""} alt={item.nombre} className="h-20 w-20 rounded-lg object-cover" />
 
                                     <div className="min-w-0 flex-1">
                                         <div className="flex items-start justify-between gap-3">
                                             <div>
-                                                <h3 className="text-sm font-semibold leading-5">{product.nombre}</h3>
-                                                <p className="mt-2 text-xs text-neutral-500">Cantidad: {"product.quantity"}</p>
+                                                <h3 className="text-sm font-semibold leading-5">{item.nombre}</h3>
+                                                <p className="mt-2 text-xs text-neutral-500">Cantidad: {item.quantity}</p>
                                             </div>
 
-                                            <span className="shrink-0 text-sm font-semibold">{formatPrice(product.precio)}</span>
+                                            <span className="shrink-0 text-sm font-semibold">{formatPrice(item.precio)}</span>
                                         </div>
                                     </div>
-                                </div>
+                                </Link>
                             ))}
                         </div>
 
@@ -182,7 +199,7 @@ const Checkout = () => {
                             </div>
 
                             <button
-                                type="submit"
+                                onClick={handleBuy}
                                 className="w-full mt-4 flex items-center cursor-pointer text-lg gap-2 bg-neutral-200 hover:bg-neutral-300 py-2 px-6 rounded-lg text-black justify-center"
                             >
                                 Pagar

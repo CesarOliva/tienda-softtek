@@ -43,7 +43,6 @@ const Footer = () => {
 
       </div>
 
-      {/* Barra Inferior de Derechos de Autor */}
       <div className="footer-bottom">
         <p>&copy; {new Date().getFullYear()} Tienda TechZone. Todos los derechos reservados.</p>
         <div className="payment-methods">
