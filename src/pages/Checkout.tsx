@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { ArrowRight, ChevronDown, Package, Truck } from "lucide-react";
 import { States } from "../types/States";
 import Input from "@/_components/Checkout/Input";
@@ -7,8 +7,19 @@ import { useCart } from "@/context/useCart";
 import ReactConfetti from "react-confetti";
 
 const Checkout = () => {
-    const { items } = useCart();
+    const { items, refreshStock } = useCart();
     const [showConfetti, setShowConfetti] = useState(false);
+    const [isCheckingStock, setIsCheckingStock] = useState(true);
+    const [isDirectPurchase, setIsDirectPurchase] = useState(false);
+
+    const location = useLocation();
+    const product = location.state;
+
+    useEffect(() => {
+        if(product){
+            setIsDirectPurchase(true);
+        }
+    }, [product]);
 
     const [form, setForm] = useState({
         name: "",
@@ -25,6 +36,11 @@ const Checkout = () => {
         (total, item) => total + item.precio * item.quantity,
         0
     );
+    const hasUnavailableItems = items.some((item) => item.stock <= 0 || item.quantity > item.stock);
+
+    useEffect(() => {
+        refreshStock().finally(() => setIsCheckingStock(false));
+    }, []);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -44,8 +60,16 @@ const Checkout = () => {
         }).format(price);
     };
 
-    const handleBuy = (e: React.FormEvent) => {
+    const handleBuy = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        setIsCheckingStock(true);
+        const stockIsAvailable = await refreshStock();
+        setIsCheckingStock(false);
+
+        if (!stockIsAvailable || hasUnavailableItems) {
+            return;
+        }
 
         setShowConfetti(true);
 
@@ -55,7 +79,7 @@ const Checkout = () => {
     };
 
     return (
-        <main className="mx-auto flex md:min-h-screen max-w-6xl flex-col gap-8 px-8 md:justify-center mt-12 md:mb-24">
+        <main className="mx-auto flex md:min-h-screen max-w-6xl flex-col gap-8 px-8 md:justify-center mt-12 mb-8 md:mb-24">
             {showConfetti && (
                 <ReactConfetti
                     width={window.innerWidth-20}
@@ -149,26 +173,32 @@ const Checkout = () => {
 
                         {/* Products */}
                         <div className="space-y-5">
-                            {items.map((item) => (
-                                <Link
-                                    to={`/producto-${item.product_id}`}
-                                    key={item.product_id}
-                                    className="flex gap-4 border-b border-neutral-800 pb-5"
-                                >
-                                    <img src={item.imagen || ""} alt={item.nombre} className="h-20 w-20 rounded-lg object-cover" />
+                            {isDirectPurchase ? (
+                                <>Compra directa</>
+                            ) : (
+                                <>
+                                    {items.map((item) => (
+                                        <Link
+                                            to={`/producto-${item.product_id}`}
+                                            key={item.product_id}
+                                            className="flex gap-4 border-b border-neutral-800 pb-5"
+                                        >
+                                            <img src={item.imagen || ""} alt={item.nombre} className="h-20 w-20 rounded-lg object-cover" />
 
-                                    <div className="min-w-0 flex-1">
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div>
-                                                <h3 className="text-sm font-semibold leading-5">{item.nombre}</h3>
-                                                <p className="mt-2 text-xs text-neutral-500">Cantidad: {item.quantity}</p>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div>
+                                                        <h3 className="text-sm font-semibold leading-5">{item.nombre}</h3>
+                                                        <p className="mt-2 text-xs text-neutral-500">Cantidad: {item.quantity}</p>
+                                                    </div>
+
+                                                    <span className="shrink-0 text-sm font-semibold">{formatPrice(item.precio)}</span>
+                                                </div>
                                             </div>
-
-                                            <span className="shrink-0 text-sm font-semibold">{formatPrice(item.precio)}</span>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))}
+                                        </Link>
+                                    ))}
+                                </>
+                            )}
                         </div>
 
                             <div className="flex items-center justify-between pt-5">
@@ -178,9 +208,10 @@ const Checkout = () => {
 
                             <button
                                 onClick={handleBuy}
-                                className="w-full mt-4 flex items-center cursor-pointer text-lg gap-2 bg-neutral-200 hover:bg-neutral-300 py-2 px-6 rounded-lg text-black justify-center"
+                                disabled={isCheckingStock || hasUnavailableItems}
+                                className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-200 px-6 py-2 text-lg text-black hover:bg-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
                             >
-                                Pagar
+                                {isCheckingStock ? "Verificando stock" : hasUnavailableItems ? "Producto agotado" : "Pagar"}
                                 <ArrowRight size={18} />
                             </button>
                         </div>

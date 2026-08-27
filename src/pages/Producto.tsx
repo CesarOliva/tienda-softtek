@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import ReactConfetti from "react-confetti";
 import { useEffect, useState } from "react";
 import Featured from "../_components/Featured";
@@ -12,6 +12,7 @@ import { useCart } from "../context/useCart";
 
 function Producto() {
     const { productId } = useParams();
+    const navigate = useNavigate();
 
     const [prefix, value] = productId?.split("-") ?? [];
     const id = prefix === "producto" && /^\d+$/.test(value) 
@@ -64,8 +65,6 @@ function Producto() {
                 .map((image) => image.ruta)
                 .filter(Boolean);
 
-            console.log("Fetched product images:", urls);
-
             setImageUrls(urls);
             setCurrentImage(0);
             setProduct(addProductImage({ ...data, images: images ?? [] }));
@@ -78,9 +77,13 @@ function Producto() {
     const handleComprar = () => {
         setShowConfetti(true);
 
-        setTimeout(() => {
-            setShowConfetti(false);
-        }, 5000);
+        navigate("/checkout", {
+            state: {
+                product: {
+                    product_id: product?.product_id
+                }
+            }
+        });
     };
     
     if (isLoading) {
@@ -131,7 +134,7 @@ function Producto() {
     }
 
     return (
-        <main className="mx-auto flex md:min-h-screen max-w-5xl flex-col gap-8 px-8 md:justify-center mt-12 md:mb-24">
+        <main className="mx-auto flex md:min-h-screen max-w-5xl flex-col gap-8 px-8 md:justify-center mt-12 mb-8 md:mb-24">
 
             {showConfetti && (
                 <ReactConfetti

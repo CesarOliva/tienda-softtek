@@ -37,20 +37,19 @@ function ProductCard({ product }) {
                     </div>
                 </div>
 
-                {product.stock > 0 && (
-                    <button
+                <button
                         type="button"
+                        disabled={product.stock <= 0}
                         onClick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();
-                            addItem(product);
+                            addItem({ product_id: product.product_id, nombre: product.nombre, imagen: product.imagen ?? "", precio: product.precio, stock: product.stock });
                         }}
-                        className="flex items-center cursor-pointer text-sm gap-3 bg-neutral-200 hover:bg-neutral-300 py-2 px-4 rounded-lg text-black"
+                        className="cursor-pointer disabled:cursor-disabled mt-3 flex items-center gap-2 rounded-lg bg-neutral-200 px-3 py-2 text-sm text-black hover:bg-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
                     >
                         <ShoppingCart className="size-4" />
-                        Agregar al carrito
+                        {product.stock <= 0 ? "Agotado" : "Agregar"}
                     </button>
-                )}
             </div>
 
         </Link>
