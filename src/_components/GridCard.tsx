@@ -40,3 +40,31 @@ const Card = (
 }
  
 export default Card;
+
+export const CardSkeleton = () => {
+    return (
+        <div className="block w-full min-w-0 overflow-hidden rounded-xl bg-neutral-900">
+            {/* Imagen */}
+            <div className="h-48 w-full animate-pulse bg-neutral-800" />
+
+            <div className="flex min-w-0 gap-1 p-4">
+                <div className="min-w-0 flex-1">
+                    {/* Nombre */}
+                    <div className="mb-2 h-5 w-3/4 animate-pulse rounded bg-neutral-800" />
+
+                    {/* Precio */}
+                    <div className="mb-2 h-4 w-1/3 animate-pulse rounded bg-neutral-800" />
+
+                    {/* Rating */}
+                    <div className="flex items-center gap-1">
+                        <div className="h-3 w-20 animate-pulse rounded bg-neutral-800" />
+                        <div className="h-3 w-6 animate-pulse rounded bg-neutral-800" />
+                    </div>
+
+                    {/* Botón */}
+                    <div className="mt-3 h-9 w-28 animate-pulse rounded-lg bg-neutral-800" />
+                </div>
+            </div>
+        </div>
+    );
+};

@@ -24,7 +24,10 @@ const Cart = () => {
                                         <button type="button" aria-label={`Quitar una unidad de ${item.nombre}`} onClick={() => removeItem(item.product_id)} className="rounded bg-neutral-800 p-1 hover:bg-neutral-700 cursor-pointer"><Minus className="size-3" /></button>
                                         <span className="min-w-4 text-center text-xs">{item.quantity}</span>
                                         <button type="button" aria-label={`Agregar una unidad de ${item.nombre}`} disabled={item.quantity >= item.stock} onClick={() => addItem(item)} className="rounded bg-neutral-800 p-1 hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"><Plus className="size-3" /></button>
-                                        <button type="button" aria-label={`Eliminar ${item.nombre}`} onClick={() => removeItem(item.product_id)} className="ml-auto text-neutral-500 hover:text-white cursor-pointer"><Trash2 className="size-3" /></button>
+                                        <button type="button" aria-label={`Eliminar ${item.nombre}`} onClick={(e) => {
+                                            e.preventDefault();
+                                            removeItem(item.product_id)
+                                        }} className="ml-auto text-neutral-500 hover:text-white cursor-pointer"><Trash2 className="size-3" /></button>
                                     </div>
                                 </div>
                             </Link>

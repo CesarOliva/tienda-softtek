@@ -3,30 +3,8 @@ import { useState } from "react";
 import { ArrowRight, ChevronDown, Package, Truck } from "lucide-react";
 import { States } from "../types/States";
 import Input from "@/_components/Checkout/Input";
-import { Product } from "@/types/Product";
 import { useCart } from "@/context/useCart";
 import ReactConfetti from "react-confetti";
-
-const products: Product[] = [
-    {
-        product_id: 1,
-        nombre: "Audífonos Inalámbricos Pro",
-        precio: 1299,
-        descripcion: "Audífonos inalámbricos de alta calidad",
-        stock: 10,
-        category_id: 1,
-        imagen: "https://placehold.co/100x100/eeeeee/222222?text=🎧",
-    },
-    {
-        product_id: 2,
-        nombre: "Teclado Mecánico RGB",
-        precio: 1599,
-        descripcion: "Teclado mecánico con retroiluminación RGB",
-        stock: 5,
-        category_id: 2,
-        imagen: "https://placehold.co/100x100/eeeeee/222222?text=⌨️",
-    },
-];
 
 const Checkout = () => {
     const { items } = useCart();

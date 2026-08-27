@@ -1,6 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import Card from "./GridCard";
+import Card, { CardSkeleton } from "./GridCard";
 import { useEffect, useState } from "react";
 import type { Product } from "../types/Product";
 import { supabase } from "../lib/supabaseClient";
@@ -26,6 +26,23 @@ const Featured = () => {
         }
 
         setProducts((data ?? []).map(addProductImage));
+    }
+
+    if(products.length === 0) {
+        return (
+            <div className="">
+                <div className="flex items-center justify-between">
+                    <div className="h-8 w-64 bg-neutral-800 "/>
+                    <div className="h-6 w-64 bg-neutral-800 "/>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-4 mt-6">
+                        {[...Array(4)].map((_, index) => (
+                            <CardSkeleton key={index} />
+                        ))}
+                </div>
+            </div>
+        )
     }
 
     return (
