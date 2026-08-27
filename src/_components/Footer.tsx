@@ -1,5 +1,5 @@
 import { Cpu, Globe, Phone } from 'lucide-react';
-import './styles/Footer.css'; 
+import './styles/Footer.css';  
 
 const Footer = () => {
   return (
