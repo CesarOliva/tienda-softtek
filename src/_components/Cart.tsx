@@ -1,9 +1,17 @@
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useCart } from "../context/useCart";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const Cart = () => {
-    const { items, addItem, removeItem, clearCart, cartTotal } = useCart();
+    const { items, addItem, removeItem, clearCart, refreshStock, cartTotal } = useCart();
+    const [isCheckingStock, setIsCheckingStock] = useState(true);
+
+    useEffect(() => {
+        refreshStock().finally(() => setIsCheckingStock(false));
+    }, []);
+
+    const hasUnavailableItems = items.some((item) => item.stock <= 0 || item.quantity > item.stock);
 
     return ( 
         <div className="absolute right-0 top-10 z-50 w-80 rounded-md border border-neutral-800 bg-neutral-900 p-4 text-neutral-200 shadow-xl">
@@ -44,14 +52,22 @@ const Cart = () => {
                             Vaciar carrito
                         </button>
 
-                        <Link
-                            to="/checkout"
-                            type="button"
-                            onClick={() => {}}
-                            className="flex items-center w-full md:w-1/2 cursor-pointer text-sm gap-2 bg-neutral-200 hover:bg-neutral-300 py-2 px-6 rounded-lg text-black justify-center"
-                        >
-                            Pagar
-                        </Link>
+                        {isCheckingStock || hasUnavailableItems ? (
+                            <button
+                                type="button"
+                                disabled
+                                className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-neutral-800 px-6 py-2 text-sm text-neutral-500 md:w-1/2"
+                            >
+                                {isCheckingStock ? "Verificando stock" : "Producto agotado"}
+                            </button>
+                        ) : (
+                            <Link
+                                to="/checkout"
+                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-200 px-6 py-2 text-sm text-black hover:bg-neutral-300 md:w-1/2"
+                            >
+                                Pagar
+                            </Link>
+                        )}
                     </div>
                 </>
             )}

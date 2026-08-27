@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, ChevronDown, Package, Truck } from "lucide-react";
 import { States } from "../types/States";
 import Input from "@/_components/Checkout/Input";
@@ -7,30 +7,10 @@ import { Product } from "@/types/Product";
 import { useCart } from "@/context/useCart";
 import ReactConfetti from "react-confetti";
 
-const products: Product[] = [
-    {
-        product_id: 1,
-        nombre: "Audífonos Inalámbricos Pro",
-        precio: 1299,
-        descripcion: "Audífonos inalámbricos de alta calidad",
-        stock: 10,
-        category_id: 1,
-        imagen: "https://placehold.co/100x100/eeeeee/222222?text=🎧",
-    },
-    {
-        product_id: 2,
-        nombre: "Teclado Mecánico RGB",
-        precio: 1599,
-        descripcion: "Teclado mecánico con retroiluminación RGB",
-        stock: 5,
-        category_id: 2,
-        imagen: "https://placehold.co/100x100/eeeeee/222222?text=⌨️",
-    },
-];
-
 const Checkout = () => {
-    const { items } = useCart();
+    const { items, refreshStock } = useCart();
     const [showConfetti, setShowConfetti] = useState(false);
+    const [isCheckingStock, setIsCheckingStock] = useState(true);
 
     const [form, setForm] = useState({
         name: "",
@@ -47,6 +27,11 @@ const Checkout = () => {
         (total, item) => total + item.precio * item.quantity,
         0
     );
+    const hasUnavailableItems = items.some((item) => item.stock <= 0 || item.quantity > item.stock);
+
+    useEffect(() => {
+        refreshStock().finally(() => setIsCheckingStock(false));
+    }, []);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -66,8 +51,16 @@ const Checkout = () => {
         }).format(price);
     };
 
-    const handleBuy = (e: React.FormEvent) => {
+    const handleBuy = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        setIsCheckingStock(true);
+        const stockIsAvailable = await refreshStock();
+        setIsCheckingStock(false);
+
+        if (!stockIsAvailable || hasUnavailableItems) {
+            return;
+        }
 
         setShowConfetti(true);
 
@@ -200,9 +193,10 @@ const Checkout = () => {
 
                             <button
                                 onClick={handleBuy}
-                                className="w-full mt-4 flex items-center cursor-pointer text-lg gap-2 bg-neutral-200 hover:bg-neutral-300 py-2 px-6 rounded-lg text-black justify-center"
+                                disabled={isCheckingStock || hasUnavailableItems}
+                                className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-200 px-6 py-2 text-lg text-black hover:bg-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
                             >
-                                Pagar
+                                {isCheckingStock ? "Verificando stock" : hasUnavailableItems ? "Producto agotado" : "Pagar"}
                                 <ArrowRight size={18} />
                             </button>
                         </div>

@@ -23,15 +23,16 @@ const Card = (
                     </div>
                     <button
                         type="button"
+                        disabled={product.stock <= 0}
                         onClick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();
                             addItem({ product_id: product.product_id, nombre: product.nombre, imagen: product.imagen ?? "", precio: product.precio, stock: product.stock });
                         }}
-                        className="cursor-pointer mt-3 flex items-center gap-2 rounded-lg bg-neutral-200 px-3 py-2 text-sm text-black hover:bg-neutral-300"
+                        className="cursor-pointer disabled:cursor-disabled mt-3 flex items-center gap-2 rounded-lg bg-neutral-200 px-3 py-2 text-sm text-black hover:bg-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
                     >
                         <ShoppingCart className="size-4" />
-                        Agregar
+                        {product.stock <= 0 ? "Agotado" : "Agregar"}
                     </button>
                 </div>
             </div>

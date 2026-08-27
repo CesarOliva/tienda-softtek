@@ -18,7 +18,8 @@ const Catalogo = () => {
     async function getProducts() {
         const { data, error } = await supabase
             .from("products")
-            .select("*, images (ruta)");
+            .select("*, images (ruta)")
+            .order("product_id");
 
         if (error) {
             console.error("Error fetching products:", error);
