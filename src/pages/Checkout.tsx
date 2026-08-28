@@ -59,11 +59,16 @@ const Checkout = () => {
 
     useEffect(() => {
         async function getAddresses() {
+            if (!user) {
+                setIsLoadingAddress(false);
+                return;
+            }
+
             setIsLoadingAddress(true);
             const { data, error } = await supabase
                 .from("addresses")
                 .select()
-                .eq("user_id", user?.id)
+                .eq("user_id", user.id)
 
             if (error) {
                 console.error("Error fetching addresses:", error);
@@ -232,7 +237,7 @@ const Checkout = () => {
 
         //add every product to purchase
         const purchasedProducts = isDirectPurchase && product
-            ? [{ purchase_id: purchase.purchase_id, product_id: product.product_id, quantity: 1 }]
+            ? [{ purchase_id: purchase.purchase_id, product_id: product.product_id, cantidad: 1 }]
             : items.map((item) => ({ purchase_id: purchase.purchase_id, product_id: item.product_id, cantidad: item.quantity }));
 
         const { error: productsError } = await supabase

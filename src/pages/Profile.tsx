@@ -177,10 +177,8 @@ const Profile = () => {
     const displayName = user.user_metadata?.display_name || "Usuario";
     const email = user.email || "Sin correo";
     const currentAddress = addresses[selectedAddress];
-    const formatPrice = (price: number) =>
-        new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(price);
-    const formatDate = (date: string) =>
-        new Intl.DateTimeFormat("es-MX", { dateStyle: "medium" }).format(new Date(date));
+    const formatPrice = (price: number) => new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(price);
+    const formatDate = (date: string) => new Intl.DateTimeFormat("es-MX", { dateStyle: "medium" }).format(new Date(date));
 
     const handleSignOut = async () => {
         setIsSigningOut(true);
