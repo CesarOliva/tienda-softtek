@@ -1,10 +1,5 @@
 import { SavedAddress } from "@/types/SavedAddress";
 import { Check, Plus } from "lucide-react";
-<<<<<<< HEAD
-import { SavedAddress } from "@/types/SavedAddresses";
-=======
-    
->>>>>>> checkout
 
 type SavedAddressesProps = {
     addresses: SavedAddress[];
