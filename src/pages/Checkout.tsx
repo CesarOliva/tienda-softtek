@@ -153,6 +153,7 @@ const Checkout = () => {
     );
     const total = isDirectPurchase && product ? product.precio : cartTotal;
     const hasUnavailableItems = items.some((item) => item.stock <= 0 || item.quantity > item.stock);
+    const isCartEmpty = !isDirectPurchase && items.length === 0;
 
     useEffect(() => {
         refreshStock().finally(() => setIsCheckingStock(false));
@@ -239,6 +240,11 @@ const Checkout = () => {
 
     const handleBuy = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (isCartEmpty) {
+            toast.error("Agrega al menos un producto al carrito.");
+            return;
+        }
 
         setIsCheckingStock(true);
         const stockIsAvailable = await refreshStock();
@@ -447,10 +453,10 @@ const Checkout = () => {
 
                             <button
                                 onClick={handleBuy}
-                                disabled={isCheckingStock || hasUnavailableItems}
+                                disabled={isCheckingStock || hasUnavailableItems || isCartEmpty}
                                 className="cursor-pointer mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-200 px-6 py-2 text-lg text-black hover:bg-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
                             >
-                                {isCheckingStock ? "Verificando stock" : hasUnavailableItems ? "Producto agotado" : "Pagar"}
+                                {isCheckingStock ? "Verificando stock" : isCartEmpty ? "Carrito vacío" : hasUnavailableItems ? "Producto agotado" : "Pagar"}
                                 <ArrowRight size={18} />
                             </button>
                         </div>
