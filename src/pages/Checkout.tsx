@@ -3,28 +3,28 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, ChevronDown, Package, Truck } from "lucide-react";
 import { States } from "../types/States";
 import Input from "@/_components/Checkout/Input";
-import {SavedAddresses, SkeletonAddresses} from "@/_components/Checkout/SavedAddresses";
+import { SavedAddresses, SkeletonAddresses } from "@/_components/Checkout/SavedAddresses";
 import { useCart } from "@/context/useCart";
+import { useAuth } from "@/context/useAuth";
 import ReactConfetti from "react-confetti";
 import { supabase } from "@/lib/supabaseClient";
 import { Product } from "@/types/Product";
 import { addProductImage } from "@/lib/productImages";
 import { toast } from "sonner";
-import { User } from "@supabase/supabase-js";
 import { SavedAddress } from "@/types/SavedAddress";
 
 const Checkout = () => {
     const navigate = useNavigate();
-    const [user, setUser] = useState<User | null>(null);
+    const { user } = useAuth(); 
 
-    const { items, refreshStock } = useCart();
+    const { items, refreshStock, clearCart } = useCart();
     const [showConfetti, setShowConfetti] = useState(false);
     const [isCheckingStock, setIsCheckingStock] = useState(true);
 
     const [product, setProduct] = useState<Product | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [isLoadingUser, setIsLoadingUser] = useState(true);
     const [isLoadingAddress, setIsLoadingAddress] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [addresses, setAddresses] = useState<SavedAddress[]>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
@@ -35,28 +35,6 @@ const Checkout = () => {
     const directProductId = productstate?.product?.product_id ?? productstate?.id;
     const isDirectPurchase = typeof directProductId === "number";
 
-    const { clearCart } = useCart();
-
-    useEffect(() => {
-        const getUser = async () => {
-            const { data, error } = await supabase.auth.getUser();
-
-            if (error) {
-                console.error(error);
-                navigate("/login");
-                return;
-            }
-            setIsLoadingUser(false);
-            setUser(data.user);
-        };
-
-        getUser();
-    }, []);
-
-    if (!user && !isLoadingUser) {
-        navigate("/");
-    }
-
     useEffect(() => {
         async function getAddresses() {
             if (!user) {
@@ -65,22 +43,22 @@ const Checkout = () => {
             }
 
             setIsLoadingAddress(true);
+
             const { data, error } = await supabase
                 .from("addresses")
                 .select()
-                .eq("user_id", user.id)
+                .eq("user_id", user.id);
 
             if (error) {
                 console.error("Error fetching addresses:", error);
-            }
-
-            if (!data) {
                 setAddresses([]);
+                setIsLoadingAddress(false);
                 return;
             }
+
+            setAddresses(data ?? []);
+            setSelectedAddressId(data?.[0]?.address_id ?? null);
             setIsLoadingAddress(false);
-            setAddresses(data);
-            setSelectedAddressId(data[0]?.address_id ?? null);
         }
 
         getAddresses();
@@ -186,7 +164,7 @@ const Checkout = () => {
         }).format(price);
     };
 
-    const transaction = async () => {
+    const transaction = async (): Promise<boolean> => {
         if (!user) {
             toast.error("Usuario no autenticado");
             return false;
@@ -204,7 +182,7 @@ const Checkout = () => {
                     ciudad: form.city,
                     estado: form.state,
                     referencia: form.reference || null,
-                    user_id: user?.id,
+                    user_id: user.id,
                 })
                 .select("address_id")
                 .single();
@@ -212,17 +190,16 @@ const Checkout = () => {
             if (addressError) {
                 console.error("Error adding address:", addressError);
                 toast.error("Ocurrió un error. Intente nuevamente");
-                return;
+                return false;
             }
 
             addressId = address.address_id;
         }
 
-        //Create purchase
         const { data: purchase, error: purchaseError } = await supabase
             .from("purchases")
             .insert({
-                user_id: user?.id,
+                user_id: user.id,
                 recibe: form.name,
                 address_id: addressId,
             })
@@ -232,10 +209,9 @@ const Checkout = () => {
         if (purchaseError) {
             console.error("Error creating purchase:", purchaseError);
             toast.error("Ocurrió un error. Intente nuevamente");
-            return;
+            return false;
         }
 
-        //add every product to purchase
         const purchasedProducts = isDirectPurchase && product
             ? [{ purchase_id: purchase.purchase_id, product_id: product.product_id, cantidad: 1 }]
             : items.map((item) => ({ purchase_id: purchase.purchase_id, product_id: item.product_id, cantidad: item.quantity }));
@@ -244,28 +220,33 @@ const Checkout = () => {
             .from("purchased_products")
             .insert(purchasedProducts);
 
-        return productsError ? false : true;
-    }
+        return !productsError;
+    };
 
     const handleBuy = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (isSubmitting) return;
 
         if (isCartEmpty) {
             toast.error("Agrega al menos un producto al carrito.");
             return;
         }
 
+        setIsSubmitting(true);
         setIsCheckingStock(true);
         const stockIsAvailable = await refreshStock();
         setIsCheckingStock(false);
 
         if (!stockIsAvailable || hasUnavailableItems) {
             toast.error("Algunos productos no están disponibles.");
+            setIsSubmitting(false);
             return;
         }
 
         if (!validateForm()) {
             toast.error("Completa todos los campos del formulario.");
+            setIsSubmitting(false);
             return;
         }
 
@@ -280,6 +261,8 @@ const Checkout = () => {
                 setShowConfetti(false);
                 navigate("/profile");
             }, 5000);
+        } else {
+            setIsSubmitting(false);
         }
     };
 
@@ -316,81 +299,81 @@ const Checkout = () => {
                             <div className="space-y-5">
                                 {isLoadingAddress ? (
                                     <SkeletonAddresses />
-                                ): (
-                                <>
-                                {addresses.length > 0 && !isAddingAddress? (
-                                    <SavedAddresses
-                                        addresses={addresses}
-                                        selectedAddressId={selectedAddressId}
-                                        recipientName={form.name}
-                                        onSelect={setSelectedAddressId}
-                                        onAddNew={() => {
-                                            setSelectedAddressId(null);
-                                            setIsAddingAddress(true);
-                                        }}
-                                    />
                                 ) : (
-                                    <div className="space-y-5">
-                                        {addresses.length > 0 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setIsAddingAddress(false);
-                                                    setSelectedAddressId(addresses[0].address_id);
+                                    <>
+                                        {addresses.length > 0 && !isAddingAddress ? (
+                                            <SavedAddresses
+                                                addresses={addresses}
+                                                selectedAddressId={selectedAddressId}
+                                                recipientName={form.name}
+                                                onSelect={setSelectedAddressId}
+                                                onAddNew={() => {
+                                                    setSelectedAddressId(null);
+                                                    setIsAddingAddress(true);
                                                 }}
-                                                className="inline-flex items-center gap-2 rounded-md border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm font-medium text-neutral-200 transition-colors hover:border-neutral-500 hover:bg-neutral-800 hover:text-white cursor-pointer"
-                                            >
-                                                <ArrowLeft className="size-4" />
-                                                Volver a direcciones guardadas
-                                            </button>
-                                        )}
-                                        <div className="w-full">
-                                            <Input label="Calle y número" name="street" value={form.street} onChange={handleChange} placeholder="Calle y número" required />
-                                        </div>
-
-                                        <div>
-                                            <label htmlFor="reference" className="mb-2 block text-sm font-medium text-neutral-300">
-                                                Referencia
-                                            </label>
-
-                                            <textarea
-                                                id="reference"
-                                                name="reference"
-                                                value={form.reference}
-                                                onChange={handleChange}
-                                                rows={3}
-                                                placeholder="Ej. Frente a la farmacia, casa color azul, etc."
-                                                className="w-full resize-none rounded-lg border border-neutral-700  bg-neutral-900 px-4 py-3 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:outline-none"
-                                                required
                                             />
-                                        </div>
+                                        ) : (
+                                            <div className="space-y-5">
+                                                {addresses.length > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setIsAddingAddress(false);
+                                                            setSelectedAddressId(addresses[0].address_id);
+                                                        }}
+                                                        className="inline-flex items-center gap-2 rounded-md border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm font-medium text-neutral-200 transition-colors hover:border-neutral-500 hover:bg-neutral-800 hover:text-white cursor-pointer"
+                                                    >
+                                                        <ArrowLeft className="size-4" />
+                                                        Volver a direcciones guardadas
+                                                    </button>
+                                                )}
+                                                <div className="w-full">
+                                                    <Input label="Calle y número" name="street" value={form.street} onChange={handleChange} placeholder="Calle y número" required />
+                                                </div>
 
-                                        <div className="grid gap-5 sm:grid-cols-2">
-                                            <Input label="Colonia" name="colony" value={form.colony} onChange={handleChange} placeholder="Colonia" required />
-                                            <Input label="Código postal" name="postalCode" value={form.postalCode} onChange={handleChange} placeholder="00000" maxLength={5} inputMode="numeric" required />
-                                        </div>
+                                                <div>
+                                                    <label htmlFor="reference" className="mb-2 block text-sm font-medium text-neutral-300">
+                                                        Referencia
+                                                    </label>
 
-                                        <div className="grid gap-5 sm:grid-cols-2">
-                                            <Input label="Ciudad" name="city" value={form.city} onChange={handleChange} placeholder="Ciudad" required />
+                                                    <textarea
+                                                        id="reference"
+                                                        name="reference"
+                                                        value={form.reference}
+                                                        onChange={handleChange}
+                                                        rows={3}
+                                                        placeholder="Ej. Frente a la farmacia, casa color azul, etc."
+                                                        className="w-full resize-none rounded-lg border border-neutral-700  bg-neutral-900 px-4 py-3 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:outline-none"
+                                                        required
+                                                    />
+                                                </div>
 
-                                            <div>
-                                                <label htmlFor="state" className="mb-2 block text-sm font-medium text-neutral-300" >Estado</label>
+                                                <div className="grid gap-5 sm:grid-cols-2">
+                                                    <Input label="Colonia" name="colony" value={form.colony} onChange={handleChange} placeholder="Colonia" required />
+                                                    <Input label="Código postal" name="postalCode" value={form.postalCode} onChange={handleChange} placeholder="00000" maxLength={5} inputMode="numeric" required />
+                                                </div>
 
-                                                <div className="relative">
-                                                    <select id="state" name="state" value={form.state} onChange={handleChange} required className="w-full appearance-none rounded-lg border border-neutral-700  bg-neutral-900 px-4 py-3 text-sm text-white outline-none transition focus:outline-none">
-                                                        <option value="" disabled>Estado</option>
-                                                        {States.map((state) => (
-                                                            <option key={state} value={state}>{state}</option>
-                                                        ))}
-                                                    </select>
+                                                <div className="grid gap-5 sm:grid-cols-2">
+                                                    <Input label="Ciudad" name="city" value={form.city} onChange={handleChange} placeholder="Ciudad" required />
 
-                                                    <ChevronDown size={18} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500" />
+                                                    <div>
+                                                        <label htmlFor="state" className="mb-2 block text-sm font-medium text-neutral-300">Estado</label>
+
+                                                        <div className="relative">
+                                                            <select id="state" name="state" value={form.state} onChange={handleChange} required className="w-full appearance-none rounded-lg border border-neutral-700  bg-neutral-900 px-4 py-3 text-sm text-white outline-none transition focus:outline-none">
+                                                                <option value="" disabled>Estado</option>
+                                                                {States.map((state) => (
+                                                                    <option key={state} value={state}>{state}</option>
+                                                                ))}
+                                                            </select>
+
+                                                            <ChevronDown size={18} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500" />
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                )}
-                                </>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </section>
@@ -409,7 +392,6 @@ const Checkout = () => {
                                 </div>
                             </div>
 
-                            {/* Products */}
                             <div className="space-y-5">
                                 {isDirectPurchase && product ? (
                                     <Link
@@ -467,10 +449,18 @@ const Checkout = () => {
 
                             <button
                                 onClick={handleBuy}
-                                disabled={isCheckingStock || hasUnavailableItems || isCartEmpty}
+                                disabled={isCheckingStock || hasUnavailableItems || isCartEmpty || isSubmitting}
                                 className="cursor-pointer mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-200 px-6 py-2 text-lg text-black hover:bg-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
                             >
-                                {isCheckingStock ? "Verificando stock" : isCartEmpty ? "Carrito vacío" : hasUnavailableItems ? "Producto agotado" : "Pagar"}
+                                {isSubmitting
+                                    ? "Procesando compra..."
+                                    : isCheckingStock
+                                    ? "Verificando stock"
+                                    : isCartEmpty
+                                    ? "Carrito vacío"
+                                    : hasUnavailableItems
+                                    ? "Producto agotado"
+                                    : "Pagar"}
                                 <ArrowRight size={18} />
                             </button>
                         </div>

@@ -1,53 +1,25 @@
 ﻿import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-import type { User } from "@supabase/supabase-js";
+import { useAuth } from "../context/useAuth";
 import { ChevronDown, LogOut, Mail, MapPin, Plus, ShoppingBag } from "lucide-react";
 import { Address, HistoryRow, Product, Purchase, PurchasedProduct } from "@/types/Profile";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
-    const [user, setUser] = useState<User | null>(null);
+    const { user, signOut } = useAuth(); 
+    const navigate = useNavigate();
+
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [selectedAddress, setSelectedAddress] = useState(0);
     const [history, setHistory] = useState<HistoryRow[]>([]);
-    const [isAuthLoading, setIsAuthLoading] = useState(true);
     const [isDataLoading, setIsDataLoading] = useState(true);
     const [isSigningOut, setIsSigningOut] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const navigate = useNavigate();
-
     useEffect(() => {
-        const loadAuth = async () => {
-            setError(null);
+        if (!user) return; // nos aseguramos q no llegamos aqui sin sesion
 
-            const { data: authData, error: authError } = await supabase.auth.getUser();
-
-            if (authError) {
-                setError("No se pudo obtener la sesión del usuario.");
-                setIsAuthLoading(false);
-                navigate("/");
-                return;
-            }
-
-            if (!authData.user) {
-                setUser(null);
-                setIsAuthLoading(false);
-                navigate("/");
-                return;
-            }
-
-            setUser(authData.user);
-            setIsAuthLoading(false);
-        };
-
-        loadAuth();
-    }, [navigate]);
-
-    useEffect(() => {
         const loadProfileData = async () => {
-            if (!user) return;
-
             setIsDataLoading(true);
             setError(null);
 
@@ -71,8 +43,7 @@ const Profile = () => {
                 return;
             }
 
-            const nextAddresses = (addressResult.data ?? []) as Address[];
-            setAddresses(nextAddresses);
+            setAddresses((addressResult.data ?? []) as Address[]);
 
             const purchases = (purchaseResult.data ?? []) as Purchase[];
             if (purchases.length === 0) {
@@ -136,43 +107,7 @@ const Profile = () => {
         loadProfileData();
     }, [user]);
 
-    if (isAuthLoading) {
-        return (
-            <main className="min-h-screen bg-neutral-950 text-white">
-                <section className="bg-neutral-800 border-b border-neutral-700">
-                    <div className="max-w-6xl mx-auto px-6 py-16">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                            <div className="flex items-center gap-6">
-                                <div className="w-24 h-24 rounded-full bg-neutral-700 animate-pulse shrink-0" />
-                                <div className="space-y-3">
-                                    <div className="h-4 w-24 rounded bg-neutral-700 animate-pulse" />
-                                    <div className="h-8 w-52 rounded bg-neutral-700 animate-pulse" />
-                                    <div className="h-4 w-40 rounded bg-neutral-700 animate-pulse" />
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div className="h-6 w-40 rounded bg-neutral-700 animate-pulse" />
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {Array.from({ length: 6 }).map((_, index) => (
-                                        <div key={index} className="h-4 rounded bg-neutral-700 animate-pulse" />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </main>
-        );
-    }
-
-    if (!user) {
-        return (
-            <main className="min-h-screen bg-neutral-950 text-white flex items-center justify-center px-6">
-                <p className="text-neutral-400">Usuario no autenticado.</p>
-            </main>
-        );
-    }
+    if (!user) return null; 
 
     const displayName = user.user_metadata?.display_name || "Usuario";
     const email = user.email || "Sin correo";
@@ -183,7 +118,7 @@ const Profile = () => {
     const handleSignOut = async () => {
         setIsSigningOut(true);
 
-        const { error: signOutError } = await supabase.auth.signOut();
+        const { error: signOutError } = await signOut();
 
         setIsSigningOut(false);
 

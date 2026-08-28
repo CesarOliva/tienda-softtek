@@ -56,10 +56,8 @@ export default function register() {
             return
         }
 
-        setMessage('Cuenta creada. Revisa tu correo para confirmar tu cuenta.')
-        setTimeout(() => {
-            navigate('/login')
-        }, 3500)
+            navigate('/'); 
+
     }
 
     return (

@@ -4,15 +4,14 @@ import { Link } from "react-router-dom";
 import ProductSearch from "./Search";
 import Cart from "./Cart";
 import { useCart } from "../context/useCart";
-import { User } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "../context/useAuth";
 
 const Menu = () => {
-    const [user, setUser] = useState<User | null>(null);
     const [mostrarBusqueda, setMostrarBusqueda] = useState(false);
     const [mostrarCarrito, setMostrarCarrito] = useState(false);
     const navRef = useRef<HTMLElement | null>(null);
     const { cartCount } = useCart();
+    const { user } = useAuth(); 
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -37,20 +36,7 @@ const Menu = () => {
         return () => document.removeEventListener("keydown", handleEscape);
     }, []);
 
-    useEffect(() => {
-        const getUser = async () => {
-            const { data, error } = await supabase.auth.getUser();
-
-            if (error) {
-                console.error(error);
-                return;
-            }
-
-            setUser(data.user);
-        };
-
-        getUser();
-    }, [user]);
+    const displayName = user?.user_metadata?.display_name || "Perfil";
 
     return (
         <header className="sticky top-0 z-100 border-b border-neutral-100/50 bg-neutral-950/80 backdrop-blur-sm">
@@ -79,7 +65,7 @@ const Menu = () => {
                         </button>
 
                         <Link
-                            to={"/login"}
+                            to={user ? "/profile" : "/login"}
                             type="button"
                             className={`flex items-center gap-2 cursor-pointer transition-colors text-neutral-300 hover:text-[#fafafa]'}`}
                             onClick={() => {
@@ -138,7 +124,7 @@ const Menu = () => {
                     >
                         <UserIcon className="size-6" />
                         <span>
-                            {user ? "Perfil" : "Iniciar sesión"}
+                            {user ? displayName : "Iniciar sesión"}
                         </span>
                     </Link>
 

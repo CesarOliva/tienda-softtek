@@ -1,5 +1,7 @@
 import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './_components/ProtectedRoute';
 import Catalogo from './pages/Catalogo';
 import Producto from './pages/Producto';
 import Menu from './_components/Menu';
@@ -26,21 +28,26 @@ function Layout() {
 
 function App() {
   return (
-    <CartProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path='/' element={<Main />} />
-            <Route path='/login' element={<Login />} />
-            <Route path='/register' element={<Register />} />
-            <Route path= '/profile' element={<Profile/>} />
-            <Route path='/catalogo' element={<Catalogo />} />
-            <Route path='/:productId' element={<Producto />} />
-            <Route path="/checkout" element={<Checkout />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path='/' element={<Main />} />
+              <Route path='/login' element={<Login />} />
+              <Route path='/register' element={<Register />} />
+              <Route path='/catalogo' element={<Catalogo />} />
+              <Route path='/:productId' element={<Producto />} />
+
+              <Route element={<ProtectedRoute />}>
+                <Route path='/profile' element={<Profile/>} />
+                <Route path="/checkout" element={<Checkout />} />
+              </Route>
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 
