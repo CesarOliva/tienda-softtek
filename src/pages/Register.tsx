@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Cpu } from "lucide-react";
 
 export default function register() {
@@ -11,7 +11,9 @@ export default function register() {
     const [error, setError] = useState('')
     const [message, setMessage] = useState('')
     const [showPassword, setShowPassword] = useState(false);
-    const [confirmPassword, setConfirmPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('');
+    
+    const navigate = useNavigate();
 
     const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -55,6 +57,9 @@ export default function register() {
         }
 
         setMessage('Cuenta creada. Revisa tu correo para confirmar tu cuenta.')
+        setTimeout(() => {
+            navigate('/login')
+        }, 3500)
     }
 
     return (

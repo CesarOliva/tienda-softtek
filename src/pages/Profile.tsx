@@ -1,70 +1,57 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
-import { Mail, MapPin, ChevronDown, Plus, ShoppingBag } from "lucide-react";
-
-type Address = {
-    address_id: number;
-    calle: string | null;
-    colonia: string | null;
-    cp: string | null;
-    ciudad: string | null;
-    estado: string | null;
-    referencia: string | null;
-};
-
-type Purchase = {
-    purchase_id: number;
-    fecha: string;
-};
-
-type PurchasedProduct = {
-    purchase_id: number;
-    product_id: number;
-    cantidad: number;
-};
-
-type Product = {
-    product_id: number;
-    nombre: string;
-    precio: number;
-};
-
-type HistoryRow = PurchasedProduct & {
-    fecha: string;
-    nombre: string;
-    precio: number;
-};
+import { ChevronDown, LogOut, Mail, MapPin, Plus, ShoppingBag } from "lucide-react";
+import { Address, HistoryRow, Product, Purchase, PurchasedProduct } from "@/types/Profile";
+import { useNavigate } from "react-router";
 
 const Profile = () => {
     const [user, setUser] = useState<User | null>(null);
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [selectedAddress, setSelectedAddress] = useState(0);
     const [history, setHistory] = useState<HistoryRow[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isAuthLoading, setIsAuthLoading] = useState(true);
+    const [isDataLoading, setIsDataLoading] = useState(true);
+    const [isSigningOut, setIsSigningOut] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const navigate = useNavigate();
+
     useEffect(() => {
-        const loadProfile = async () => {
-            setIsLoading(true);
+        const loadAuth = async () => {
             setError(null);
 
             const { data: authData, error: authError } = await supabase.auth.getUser();
 
             if (authError) {
                 setError("No se pudo obtener la sesión del usuario.");
-                setIsLoading(false);
+                setIsAuthLoading(false);
+                navigate("/");
                 return;
             }
 
             if (!authData.user) {
                 setUser(null);
-                setIsLoading(false);
+                setIsAuthLoading(false);
+                navigate("/");
                 return;
             }
 
             setUser(authData.user);
-            const userId = authData.user.id;
+            setIsAuthLoading(false);
+        };
+
+        loadAuth();
+    }, [navigate]);
+
+    useEffect(() => {
+        const loadProfileData = async () => {
+            if (!user) return;
+
+            setIsDataLoading(true);
+            setError(null);
+
+            const userId = user.id;
 
             const [addressResult, purchaseResult] = await Promise.all([
                 supabase
@@ -80,16 +67,17 @@ const Profile = () => {
 
             if (addressResult.error || purchaseResult.error) {
                 setError("No se pudo consultar la información del perfil.");
-                setIsLoading(false);
+                setIsDataLoading(false);
                 return;
             }
 
-            setAddresses((addressResult.data ?? []) as Address[]);
-            const purchases = (purchaseResult.data ?? []) as Purchase[];
+            const nextAddresses = (addressResult.data ?? []) as Address[];
+            setAddresses(nextAddresses);
 
+            const purchases = (purchaseResult.data ?? []) as Purchase[];
             if (purchases.length === 0) {
                 setHistory([]);
-                setIsLoading(false);
+                setIsDataLoading(false);
                 return;
             }
 
@@ -102,14 +90,14 @@ const Profile = () => {
 
             if (purchasedProductsError) {
                 setError("No se pudo consultar los productos comprados.");
-                setIsLoading(false);
+                setIsDataLoading(false);
                 return;
             }
 
             const purchasedProducts = (purchasedProductsData ?? []) as PurchasedProduct[];
             if (purchasedProducts.length === 0) {
                 setHistory([]);
-                setIsLoading(false);
+                setIsDataLoading(false);
                 return;
             }
 
@@ -121,7 +109,7 @@ const Profile = () => {
 
             if (productsError) {
                 setError("No se pudo consultar la información de los productos.");
-                setIsLoading(false);
+                setIsDataLoading(false);
                 return;
             }
 
@@ -142,16 +130,38 @@ const Profile = () => {
                         : [];
                 }),
             );
-            setIsLoading(false);
+            setIsDataLoading(false);
         };
 
-        loadProfile();
-    }, []);
+        loadProfileData();
+    }, [user]);
 
-    if (isLoading) {
+    if (isAuthLoading) {
         return (
-            <main className="min-h-screen bg-neutral-950 text-white flex items-center justify-center">
-                <p className="text-neutral-400">Cargando perfil...</p>
+            <main className="min-h-screen bg-neutral-950 text-white">
+                <section className="bg-neutral-800 border-b border-neutral-700">
+                    <div className="max-w-6xl mx-auto px-6 py-16">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div className="flex items-center gap-6">
+                                <div className="w-24 h-24 rounded-full bg-neutral-700 animate-pulse shrink-0" />
+                                <div className="space-y-3">
+                                    <div className="h-4 w-24 rounded bg-neutral-700 animate-pulse" />
+                                    <div className="h-8 w-52 rounded bg-neutral-700 animate-pulse" />
+                                    <div className="h-4 w-40 rounded bg-neutral-700 animate-pulse" />
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="h-6 w-40 rounded bg-neutral-700 animate-pulse" />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {Array.from({ length: 6 }).map((_, index) => (
+                                        <div key={index} className="h-4 rounded bg-neutral-700 animate-pulse" />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </main>
         );
     }
@@ -172,10 +182,25 @@ const Profile = () => {
     const formatDate = (date: string) =>
         new Intl.DateTimeFormat("es-MX", { dateStyle: "medium" }).format(new Date(date));
 
+    const handleSignOut = async () => {
+        setIsSigningOut(true);
+
+        const { error: signOutError } = await supabase.auth.signOut();
+
+        setIsSigningOut(false);
+
+        if (signOutError) {
+            setError("No se pudo cerrar la sesión.");
+            return;
+        }
+
+        navigate("/");
+    };
+
     return (
         <main className="min-h-screen bg-neutral-950 text-white">
             <section className="bg-neutral-800 border-b border-neutral-700">
-                <div className="max-w-6xl mx-auto px-6 py-10">
+                <div className="max-w-6xl mx-auto px-6 py-16">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                         <div className="flex items-center gap-6">
                             <div className="w-24 h-24 rounded-full bg-neutral-900 text-white flex items-center justify-center text-3xl font-semibold shadow-md shrink-0">
@@ -188,6 +213,15 @@ const Profile = () => {
                                     <Mail className="w-4 h-4 text-neutral-400" />
                                     <p className="text-sm text-neutral-400">{email}</p>
                                 </div>
+                                <button
+                                    type="button"
+                                    onClick={handleSignOut}
+                                    disabled={isSigningOut}
+                                    className="cursor-pointer mt-6 inline-flex items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-2 text-sm text-neutral-200 transition hover:border-neutral-500 hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                    {isSigningOut ? "Cerrando sesión..." : "Cerrar sesión"}
+                                </button>
                             </div>
                         </div>
 
@@ -200,7 +234,7 @@ const Profile = () => {
                                         <p className="text-xs text-neutral-400">Dirección de envío</p>
                                     </div>
                                 </div>
-                                <button type="button" className="flex items-center gap-1 text-sm text-neutral-300 hover:text-white transition">
+                                <button type="button" className="hidden flex items-center gap-1 text-sm text-neutral-300 hover:text-white transition">
                                     <Plus className="w-4 h-4" />
                                     Agregar
                                 </button>
@@ -215,7 +249,8 @@ const Profile = () => {
                                     >
                                         {addresses.map((address, index) => (
                                             <option key={address.address_id} value={index}>
-                                                Dirección {index + 1}{index === 0 ? " (Principal)" : ""}
+                                                Dirección {index + 1}
+                                                {index === 0 ? " (Principal)" : ""}
                                             </option>
                                         ))}
                                     </select>
@@ -223,7 +258,13 @@ const Profile = () => {
                                 </div>
                             )}
 
-                            {currentAddress ? (
+                            {isDataLoading ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                                    {Array.from({ length: 6 }).map((_, index) => (
+                                        <div key={index} className="h-4 rounded bg-neutral-700 animate-pulse" />
+                                    ))}
+                                </div>
+                            ) : currentAddress ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-neutral-300">
                                     <p><span className="text-neutral-500">Calle:</span> {currentAddress.calle || "Sin información"}</p>
                                     <p><span className="text-neutral-500">Colonia:</span> {currentAddress.colonia || "Sin información"}</p>
@@ -248,6 +289,31 @@ const Profile = () => {
 
                 {error ? (
                     <div className="rounded-xl border border-red-900/60 bg-red-950/30 p-5 text-sm text-red-300">{error}</div>
+                ) : isDataLoading ? (
+                    <div className="overflow-x-auto rounded-xl border border-neutral-800 bg-neutral-900">
+                        <table className="w-full text-left text-sm">
+                            <thead className="border-b border-neutral-800 bg-neutral-900/80 text-xs uppercase tracking-wide text-neutral-500">
+                                <tr>
+                                    <th className="px-5 py-4">ID de compra</th>
+                                    <th className="px-5 py-4">Producto</th>
+                                    <th className="px-5 py-4">Cantidad</th>
+                                    <th className="px-5 py-4">Precio</th>
+                                    <th className="px-5 py-4">Fecha de compra</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-neutral-800">
+                                {Array.from({ length: 4 }).map((_, index) => (
+                                    <tr key={index}>
+                                        <td className="px-5 py-4"><div className="h-4 w-20 rounded bg-neutral-800 animate-pulse" /></td>
+                                        <td className="px-5 py-4"><div className="h-4 w-40 rounded bg-neutral-800 animate-pulse" /></td>
+                                        <td className="px-5 py-4"><div className="h-4 w-10 rounded bg-neutral-800 animate-pulse" /></td>
+                                        <td className="px-5 py-4"><div className="h-4 w-24 rounded bg-neutral-800 animate-pulse" /></td>
+                                        <td className="px-5 py-4"><div className="h-4 w-28 rounded bg-neutral-800 animate-pulse" /></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 ) : history.length === 0 ? (
                     <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-8 text-center">
                         <ShoppingBag className="w-8 h-8 mx-auto mb-3 text-neutral-500" />

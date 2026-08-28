@@ -50,7 +50,7 @@ const Menu = () => {
         };
 
         getUser();
-    }, []);
+    }, [user,]);
 
     return (
         <header className="sticky top-0 z-100 border-b border-neutral-100/50 bg-neutral-950/80 backdrop-blur-sm">
