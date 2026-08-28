@@ -43,6 +43,7 @@ const Checkout = () => {
 
             if (error) {
                 console.error(error);
+                navigate("/login");
                 return;
             }
             setIsLoadingUser(false);
