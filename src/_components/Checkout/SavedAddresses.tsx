@@ -1,14 +1,5 @@
 import { Check, Plus } from "lucide-react";
-
-export type SavedAddress = {
-    address_id: number;
-    calle: string;
-    colonia: string;
-    cp: string;
-    ciudad: string;
-    estado: string;
-    referencia?: string | null;
-};
+import { SavedAddress } from "@/types/SavedAddresses";
 
 type SavedAddressesProps = {
     addresses: SavedAddress[];

@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, ChevronDown, Package, Truck } from "lucide-react";
 import { States } from "../types/States";
 import Input from "@/_components/Checkout/Input";
-import SavedAddresses, { type SavedAddress } from "@/_components/Checkout/SavedAddresses";
+import SavedAddresses from "@/_components/Checkout/SavedAddresses";
+import { SavedAddress } from "@/types/SavedAddresses";
 import { useCart } from "@/context/useCart";
 import ReactConfetti from "react-confetti";
 import { supabase } from "@/lib/supabaseClient";
@@ -153,6 +154,7 @@ const Checkout = () => {
     );
     const total = isDirectPurchase && product ? product.precio : cartTotal;
     const hasUnavailableItems = items.some((item) => item.stock <= 0 || item.quantity > item.stock);
+    const hasNoProducts = isDirectPurchase ? !product : items.length === 0;
 
     useEffect(() => {
         refreshStock().finally(() => setIsCheckingStock(false));
@@ -319,13 +321,12 @@ const Checkout = () => {
                                                     setIsAddingAddress(false);
                                                     setSelectedAddressId(addresses[0].address_id);
                                                 }}
-                                                className="inline-flex items-center gap-2 rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm font-medium text-neutral-200 transition-colors hover:border-neutral-500 hover:bg-neutral-800 hover:text-white cursor-pointer"
+                                                className="inline-flex items-center gap-2 rounded-md border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm font-medium text-neutral-200 transition-colors hover:border-neutral-500 hover:bg-neutral-800 hover:text-white cursor-pointer"
                                             >
                                                 <ArrowLeft className="size-4" />
                                                 Volver a direcciones guardadas
                                             </button>
                                         )}
-                                        <Input label="Nombre completo" name="name" value={form.name} onChange={handleChange} placeholder="Nombre de quien recibe" required />
                                         <div className="w-full">
                                             <Input label="Calle y número" name="street" value={form.street} onChange={handleChange} placeholder="Calle y número" required />
                                         </div>
@@ -447,10 +448,10 @@ const Checkout = () => {
 
                             <button
                                 onClick={handleBuy}
-                                disabled={isCheckingStock || hasUnavailableItems}
+                                disabled={isCheckingStock || hasUnavailableItems || hasNoProducts}
                                 className="cursor-pointer mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-200 px-6 py-2 text-lg text-black hover:bg-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
                             >
-                                {isCheckingStock ? "Verificando stock" : hasUnavailableItems ? "Producto agotado" : "Pagar"}
+                                {isCheckingStock ? "Verificando stock" : hasNoProducts ? "Sin productos" : hasUnavailableItems ? "Producto agotado" : "Pagar"}
                                 <ArrowRight size={18} />
                             </button>
                         </div>
