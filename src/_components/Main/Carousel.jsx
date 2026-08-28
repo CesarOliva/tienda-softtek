@@ -14,15 +14,15 @@ const carouselSlides = [
     src: "/images/carousel/producto-2.png",
     category: "teclados",
     eyebrow: "TechZone",
-    title: "LLega a tu máximo nivel",
+    title: "Llega a tu máximo nivel",
     description: "Encuentra tu teclado ideal.",
   },
   {
     src: "/images/carousel/producto-3.png",
     category: "mouse",
     eyebrow: "TechZone",
-    title: "Descrubre tu estilo",
-    description: "Los mejores mouses para Ti.",
+    title: "Descubre tu estilo",
+    description: "Los mejores mouses para ti.",
   },
 ];
 
