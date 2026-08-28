@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, ChevronDown, Package, Truck } from "lucide-react";
 import { States } from "../types/States";
 import Input from "@/_components/Checkout/Input";
-import SavedAddresses from "@/_components/Checkout/SavedAddresses";
-import { SavedAddress } from "@/types/SavedAddresses";
+import {SavedAddresses, SkeletonAddresses} from "@/_components/Checkout/SavedAddresses";
 import { useCart } from "@/context/useCart";
 import ReactConfetti from "react-confetti";
 import { supabase } from "@/lib/supabaseClient";
@@ -12,6 +11,7 @@ import { Product } from "@/types/Product";
 import { addProductImage } from "@/lib/productImages";
 import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
+import { SavedAddress } from "@/types/SavedAddress";
 
 const Checkout = () => {
     const navigate = useNavigate();
@@ -24,6 +24,7 @@ const Checkout = () => {
     const [product, setProduct] = useState<Product | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingUser, setIsLoadingUser] = useState(true);
+    const [isLoadingAddress, setIsLoadingAddress] = useState(true);
 
     const [addresses, setAddresses] = useState<SavedAddress[]>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
@@ -57,6 +58,7 @@ const Checkout = () => {
 
     useEffect(() => {
         async function getAddresses() {
+            setIsLoadingAddress(true);
             const { data, error } = await supabase
                 .from("addresses")
                 .select()
@@ -70,7 +72,7 @@ const Checkout = () => {
                 setAddresses([]);
                 return;
             }
-
+            setIsLoadingAddress(false);
             setAddresses(data);
             setSelectedAddressId(data[0]?.address_id ?? null);
         }
@@ -154,7 +156,7 @@ const Checkout = () => {
     );
     const total = isDirectPurchase && product ? product.precio : cartTotal;
     const hasUnavailableItems = items.some((item) => item.stock <= 0 || item.quantity > item.stock);
-    const hasNoProducts = isDirectPurchase ? !product : items.length === 0;
+    const isCartEmpty = !isDirectPurchase && items.length === 0;
 
     useEffect(() => {
         refreshStock().finally(() => setIsCheckingStock(false));
@@ -242,6 +244,11 @@ const Checkout = () => {
     const handleBuy = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        if (isCartEmpty) {
+            toast.error("Agrega al menos un producto al carrito.");
+            return;
+        }
+
         setIsCheckingStock(true);
         const stockIsAvailable = await refreshStock();
         setIsCheckingStock(false);
@@ -301,7 +308,11 @@ const Checkout = () => {
                             </div>
 
                             <div className="space-y-5">
-                                {addresses.length > 0 && !isAddingAddress ? (
+                                {isLoadingAddress ? (
+                                    <SkeletonAddresses />
+                                ): (
+                                <>
+                                {addresses.length > 0 && !isAddingAddress? (
                                     <SavedAddresses
                                         addresses={addresses}
                                         selectedAddressId={selectedAddressId}
@@ -372,6 +383,8 @@ const Checkout = () => {
                                             </div>
                                         </div>
                                     </div>
+                                )}
+                                </>
                                 )}
                             </div>
                         </section>
@@ -448,10 +461,10 @@ const Checkout = () => {
 
                             <button
                                 onClick={handleBuy}
-                                disabled={isCheckingStock || hasUnavailableItems || hasNoProducts}
+                                disabled={isCheckingStock || hasUnavailableItems || isCartEmpty}
                                 className="cursor-pointer mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-200 px-6 py-2 text-lg text-black hover:bg-neutral-300 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
                             >
-                                {isCheckingStock ? "Verificando stock" : hasNoProducts ? "Sin productos" : hasUnavailableItems ? "Producto agotado" : "Pagar"}
+                                {isCheckingStock ? "Verificando stock" : isCartEmpty ? "Carrito vacío" : hasUnavailableItems ? "Producto agotado" : "Pagar"}
                                 <ArrowRight size={18} />
                             </button>
                         </div>

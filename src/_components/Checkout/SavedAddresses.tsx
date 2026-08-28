@@ -1,5 +1,10 @@
+import { SavedAddress } from "@/types/SavedAddress";
 import { Check, Plus } from "lucide-react";
+<<<<<<< HEAD
 import { SavedAddress } from "@/types/SavedAddresses";
+=======
+    
+>>>>>>> checkout
 
 type SavedAddressesProps = {
     addresses: SavedAddress[];
@@ -9,7 +14,7 @@ type SavedAddressesProps = {
     onAddNew: () => void;
 };
 
-const SavedAddresses = ({
+export const SavedAddresses = ({
     addresses,
     selectedAddressId,
     recipientName,
@@ -18,7 +23,7 @@ const SavedAddresses = ({
 }: SavedAddressesProps) => {
     return (
         <div className="space-y-3">
-            <p className="text-sm font-medium text-neutral-300">Selecciona una dirección guardada</p>
+            <p className="text-md font-medium text-neutral-300">Selecciona una dirección guardada</p>
             <div className="grid gap-3">
                 {addresses.map((address) => (
                     <button
@@ -49,4 +54,52 @@ const SavedAddresses = ({
     );
 };
 
-export default SavedAddresses;
+export const SkeletonAddresses = () => {
+    return (
+        <div className="space-y-3 animate-pulse">
+            {/* Título skeleton */}
+            <p className="text-sm font-medium text-neutral-300">
+                <span className="inline-block w-48 h-4 bg-neutral-800 rounded"></span>
+            </p>
+            
+            {/* Grid de direcciones skeleton */}
+            <div className="grid gap-3">
+                {/* Dirección 1 skeleton */}
+                <div className="flex w-full items-start justify-between gap-4 rounded-lg border border-neutral-700 bg-neutral-950 p-4">
+                    <div className="space-y-2 flex-1">
+                        <div className="flex items-center gap-2">
+                            <span className="inline-block w-32 h-4 bg-neutral-800 rounded"></span>
+                            <span className="inline-block w-20 h-4 bg-neutral-800 rounded"></span>
+                        </div>
+                        <div className="w-48 h-3 bg-neutral-800 rounded"></div>
+                        <div className="w-64 h-3 bg-neutral-800 rounded"></div>
+                        <div className="w-40 h-3 bg-neutral-800 rounded"></div>
+                        <div className="w-52 h-3 bg-neutral-800 rounded"></div>
+                    </div>
+                    <div className="size-5 bg-neutral-800 rounded-full shrink-0"></div>
+                </div>
+
+                {/* Dirección 2 skeleton */}
+                <div className="flex w-full items-start justify-between gap-4 rounded-lg border border-neutral-700 bg-neutral-950 p-4">
+                    <div className="space-y-2 flex-1">
+                        <div className="flex items-center gap-2">
+                            <span className="inline-block w-28 h-4 bg-neutral-800 rounded"></span>
+                            <span className="inline-block w-24 h-4 bg-neutral-800 rounded"></span>
+                        </div>
+                        <div className="w-56 h-3 bg-neutral-800 rounded"></div>
+                        <div className="w-72 h-3 bg-neutral-800 rounded"></div>
+                        <div className="w-44 h-3 bg-neutral-800 rounded"></div>
+                        <div className="w-60 h-3 bg-neutral-800 rounded"></div>
+                    </div>
+                    <div className="size-5 bg-neutral-800 rounded-full shrink-0"></div>
+                </div>
+            </div>
+
+            {/* Botón "Agregar nueva dirección" skeleton */}
+            <div className="flex items-center gap-2">
+                <div className="size-4 bg-neutral-800 rounded"></div>
+                <span className="inline-block w-48 h-4 bg-neutral-800 rounded"></span>
+            </div>
+        </div>
+    );
+}
